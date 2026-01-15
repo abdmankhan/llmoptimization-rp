@@ -1,6 +1,8 @@
 import random
 import copy
 
+from evaluation.metrics import pareto_front
+
 
 def mopso_optimize(jobs, prompts, p_matrix, cost_fn,
                    swarm_size=30, iterations=30):
@@ -33,7 +35,7 @@ def mopso_optimize(jobs, prompts, p_matrix, cost_fn,
             })
 
         # keep non-dominated
-        archive = pareto_filter(archive)
+        archive = pareto_front(archive)
         swarm = random.sample(
             [a["assignment"] for a in archive],
             min(swarm_size, len(archive))
