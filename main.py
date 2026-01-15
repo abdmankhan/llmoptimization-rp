@@ -1,6 +1,6 @@
 from jobs.loader import load_hdfs_jobs
 from prompts.templates import PROMPT_TEMPLATES
-from predictors.mlbp import train_predictor, predict_probabilities
+from predictors.mlbp import train_predictor, predict_probabilities, create_training_data
 from optimizers.random_search import random_search
 from evaluation.baseline import single_prompt_baseline
 from evaluation.pareto import pareto_front
@@ -24,8 +24,19 @@ jobs = load_hdfs_jobs(
 
 prompts = PROMPT_TEMPLATES
 
+# =============================
+# PREDICTOR CONFIG
+# =============================
+PREDICTOR_TYPE = "xgb"   # "rf" or "xgb"
+
 # Train predictor
-model = train_predictor(jobs, prompts)
+# Create training data
+X, y = create_training_data(jobs, prompts)
+
+# Train predictor (RF or XGB)
+model = train_predictor(X, y, predictor_type=PREDICTOR_TYPE)
+
+
 probabilities = predict_probabilities(model, jobs, prompts)
 
 # Baseline (RQ1)
@@ -178,7 +189,10 @@ OPTIMIZER_INDEX = 2   # <-- change ONLY this number
 
 # print("[DONE] Table 3 metrics saved to results/tables/table3_optimizer_comparison.csv")
 NUM_RUNS = 3
+
+
 OPTIMIZER_NAMES = ["Random Search", "NSGA-II", "SPEA2"]
+
 from collections import defaultdict
 import numpy as np
 import pandas as pd

@@ -4,60 +4,78 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
+from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
-def train_predictor(jobs, prompts):
-    X, y = [], []
+import numpy as np
 
-    import random
-    import math
 
-    MAX_JOB_TOKENS = max(job["tokens"] for job in jobs)
-    MAX_PROMPT_TOKENS = max(p["tokens"] for p in prompts)
+def create_training_data(jobs, prompts):
+    """
+    Build training data for MLBP.
 
-    ALPHA = 4.0      # steepness (tunable)
-    NOISE = 0.05     # realism noise
+    Each sample corresponds to (job_i, prompt_j).
+    Features: [job_tokens, prompt_tokens]
+    Label: simulated success (job label)
+    """
 
-    HISTORICAL_FRACTION = 0.3 # 20%
-    historical_jobs = random.sample(
-        jobs,
-        int(len(jobs) * HISTORICAL_FRACTION)
-    )
-    for job in historical_jobs:
+    X = []
+    y = []
+
+    for job in jobs:
         for prompt in prompts:
-            job_norm = job["tokens"] / MAX_JOB_TOKENS
-            prompt_norm = prompt["tokens"] / MAX_PROMPT_TOKENS
+            # Features
+            X.append([
+                job["tokens"],
+                prompt["tokens"]
+            ])
 
-            logit = ALPHA * (prompt_norm - job_norm)
-            success_prob = 1 / (1 + math.exp(-logit))
+            # Label (simulated ground truth)
+            y.append(job["label"])
 
-        # add noise so nothing is perfect
-            success_prob = max(0.0, min(1.0, success_prob + random.uniform(-NOISE, NOISE)))
-
-            success = 1 if random.random() < success_prob else 0
-
-            X.append([job["tokens"], prompt["tokens"]])
-            y.append(success)
+    return np.array(X), np.array(y)
 
 
-
-    X = np.array(X)
-    y = np.array(y)
-
+def train_predictor(X, y, predictor_type="rf"):
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
+        X, y, test_size=0.2, random_state=42, stratify=y
     )
 
-    model = RandomForestClassifier(
-        n_estimators=100,
-        n_jobs=1,
-        random_state=42
-    )
+    if predictor_type == "rf":
+        model = RandomForestClassifier(
+            n_estimators=200,
+            max_depth=None,
+            n_jobs=-1,
+            random_state=42
+        )
+
+    elif predictor_type == "xgb":
+        model = XGBClassifier(
+            n_estimators=300,
+            max_depth=6,
+            learning_rate=0.1,
+            subsample=0.8,
+            colsample_bytree=0.8,
+            objective="binary:logistic",
+            eval_metric="logloss",
+            n_jobs=-1,
+            random_state=42
+        )
+
+    else:
+        raise ValueError(f"Unknown predictor_type: {predictor_type}")
 
     model.fit(X_train, y_train)
-    preds = model.predict(X_test)
 
-    print(f"[MLBP] Predictor accuracy: {accuracy_score(y_test, preds):.4f}")
+    preds = model.predict(X_test)
+    acc = accuracy_score(y_test, preds)
+
+    print(f"[MLBP-{predictor_type.upper()}] Predictor accuracy: {acc:.4f}")
+
     return model
+
 
 
 import time

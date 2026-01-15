@@ -5,3 +5,4 @@ matplotlib
 python-dotenv
 deap
 google-generativeai
+xgboost
