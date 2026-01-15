@@ -27,8 +27,11 @@ def nsga2_optimize(
     num_prompts = len(prompts)
 
     # ---------- DEAP setup ----------
-    creator.create("FitnessMulti", base.Fitness, weights=(-1.0, 1.0))
-    creator.create("Individual", list, fitness=creator.FitnessMulti)
+    if not hasattr(creator, "FitnessMulti"):
+        creator.create("FitnessMulti", base.Fitness, weights=(-1.0, 1.0))
+    if not hasattr(creator, "Individual"):
+        creator.create("Individual", list, fitness=creator.FitnessMulti)
+
 
     toolbox = base.Toolbox()
 

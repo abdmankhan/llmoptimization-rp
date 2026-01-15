@@ -20,10 +20,10 @@ OPTIMIZERS = [
         "name": "SPEA2",
         "fn": spea2_optimize
     },
-    {
-        "name": "MOPSO",
-        "fn": mopso_optimize
-    },
+    # {
+    #     "name": "MOPSO",
+    #     "fn": mopso_optimize
+    # },
     # {
     #     "name": "MOEA/D",
     #     "fn": moead_optimize

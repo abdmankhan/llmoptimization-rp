@@ -8,8 +8,11 @@ def spea2_optimize(jobs, prompts, p_matrix, cost_fn,
     num_jobs = len(jobs)
     num_prompts = len(prompts)
 
-    creator.create("FitnessSPEA2", base.Fitness, weights=(-1.0, 1.0))
-    creator.create("IndividualSPEA2", list, fitness=creator.FitnessSPEA2)
+    if not hasattr(creator, "FitnessSPEA2"):
+        creator.create("FitnessSPEA2", base.Fitness, weights=(-1.0, 1.0))
+    if not hasattr(creator, "IndividualSPEA2"):
+        creator.create("IndividualSPEA2", list, fitness=creator.FitnessSPEA2)
+
 
     toolbox = base.Toolbox()
     toolbox.register("attr_prompt", random.randrange, num_prompts)
