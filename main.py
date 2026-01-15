@@ -6,12 +6,20 @@ from evaluation.baseline import single_prompt_baseline
 from evaluation.pareto import pareto_front
 from visualization.plots import plot_pareto
 from cost.cost_model import compute_cost
+from evaluation.metrics import (
+    pareto_front,
+    compute_igd,
+    compute_delta,
+    compute_mn
+)
+
+
 
 # Load jobs
 jobs = load_hdfs_jobs(
     "hdfs_data/HDFS.log",
     "hdfs_data/preprocessed/anomaly_label.csv",
-    max_jobs=6000
+    max_jobs=3000
 )
 
 prompts = PROMPT_TEMPLATES
@@ -61,11 +69,29 @@ solutions = optimizer_fn(
 )
 
 
-pareto = pareto_front(solutions)
+# =============================
+# Evaluation Metrics (Table 3)
+# =============================
+
+# Pareto front for this optimizer
+pf = pareto_front(solutions)
+
+# Reference Pareto (for now, use self-reference)
+# Later this will be union of all optimizers
+reference_pf = pf
+
+igd = compute_igd(pf, reference_pf)
+delta = compute_delta(pf)
+mn = compute_mn(pf)
+
+print(
+    f"[METRICS] IGD={igd:.4f} | Δ={delta:.4f} | Mₙ={mn}"
+)
+
 import pandas as pd
 
 # Save optimized Pareto solutions
-pareto_df = pd.DataFrame(pareto)
+pareto_df = pd.DataFrame(pf)
 pareto_df.to_csv(
     "results/tables/optimized_pareto.csv",
     index=False
@@ -75,7 +101,7 @@ pareto_df.to_csv(
 # Plot
 plot_pareto(
     solutions,
-    pareto,
+    pf,
     baseline_results,
     "results/figures/pareto_with_baselines.png"
 )
