@@ -5,13 +5,13 @@ from optimizers.random_search import random_search
 from evaluation.baseline import single_prompt_baseline
 from evaluation.pareto import pareto_front
 from visualization.plots import plot_pareto
-
+from cost.cost_model import compute_cost
 
 # Load jobs
 jobs = load_hdfs_jobs(
     "hdfs_data/HDFS.log",
     "hdfs_data/preprocessed/anomaly_label.csv",
-    max_jobs=10000
+    max_jobs=6000
 )
 
 prompts = PROMPT_TEMPLATES
@@ -40,7 +40,27 @@ baseline_df.to_csv(
 
 
 # Optimization
-solutions = random_search(jobs, prompts, probabilities)
+# solutions = random_search(jobs, prompts, probabilities)
+from optimizers.registry import OPTIMIZERS
+
+# =============================
+# SELECT OPTIMIZER BY INDEX
+# =============================
+OPTIMIZER_INDEX = 2   # <-- change ONLY this number
+
+optimizer_entry = OPTIMIZERS[OPTIMIZER_INDEX]
+optimizer_fn = optimizer_entry["fn"]
+
+print(f"[OPTIMIZER] Using {optimizer_entry['name']}")
+
+solutions = optimizer_fn(
+    jobs,
+    prompts,
+    probabilities,
+    compute_cost
+)
+
+
 pareto = pareto_front(solutions)
 import pandas as pd
 
@@ -62,3 +82,5 @@ plot_pareto(
 
 
 print("[DONE] Pareto plot saved")
+
+

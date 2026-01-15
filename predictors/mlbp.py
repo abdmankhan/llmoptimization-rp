@@ -60,14 +60,31 @@ def train_predictor(jobs, prompts):
     return model
 
 
+import time
+
 def predict_probabilities(model, jobs, prompts):
     p = {}
 
-    for job in jobs:
+    total_jobs = len(jobs)
+    start_time = time.time()
+
+    for i, job in enumerate(jobs):
         for prompt in prompts:
-            features = np.array([[job["tokens"], prompt["tokens"]]])
+            features = [[job["tokens"], prompt["tokens"]]]
             prob = model.predict_proba(features)[0][1]
-            p[(job["id"], prompt["id"])] = prob
+            p[(i, prompt["id"])] = prob
+
+        # ---- progress logging ----
+        if i % max(1, total_jobs // 20) == 0:
+            percent = (i / total_jobs) * 100
+            elapsed = time.time() - start_time
+            print(
+                f"[PROGRESS] Probability matrix: "
+                f"{percent:.1f}% ({i}/{total_jobs}) | "
+                f"{elapsed:.1f}s elapsed"
+            )
+        # --------------------------
 
     print("[MLBP] Probability matrix computed")
     return p
+

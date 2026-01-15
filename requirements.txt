@@ -3,4 +3,5 @@ pandas
 scikit-learn
 matplotlib
 python-dotenv
+deap
 google-generativeai
