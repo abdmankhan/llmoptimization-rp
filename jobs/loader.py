@@ -19,6 +19,7 @@ def load_hdfs_jobs(log_path, label_path, max_jobs=20000):
 
             jobs.append({
                 "id": len(jobs),
+                "log": line.strip(),
                 "text": line.strip(),
                 "tokens": len(line.split()),
                 "label": label

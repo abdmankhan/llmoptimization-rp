@@ -9,33 +9,79 @@ from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
+# import numpy as np
+
+
+# def create_training_data(jobs, prompts):
+#     """
+#     Build training data for MLBP.
+
+#     Each sample corresponds to (job_i, prompt_j).
+#     Features: [job_tokens, prompt_tokens]
+#     Label: simulated success (job label)
+#     """
+
+#     X = []
+#     y = []
+
+#     for job in jobs:
+#         for prompt in prompts:
+#             # Features
+#             X.append([
+#                 job["tokens"],
+#                 prompt["tokens"]
+#             ])
+
+#             # Label (simulated ground truth)
+#             y.append(job["label"])
+
+#     return np.array(X), np.array(y)
+
+
+import random
 import numpy as np
+from llm.gemini_client import query_gemini
 
 
-def create_training_data(jobs, prompts):
-    """
-    Build training data for MLBP.
+GROUNDING_RATIO = 0.10
+RANDOM_SEED = 42
+MAX_GEMINI_CALLS = 50
 
-    Each sample corresponds to (job_i, prompt_j).
-    Features: [job_tokens, prompt_tokens]
-    Label: simulated success (job label)
-    """
+def create_training_data(jobs, prompts, use_real_llm=True):
+    random.seed(RANDOM_SEED)
 
-    X = []
-    y = []
+    X, y = [], []
 
-    for job in jobs:
-        for prompt in prompts:
-            # Features
-            X.append([
-                job["tokens"],
-                prompt["tokens"]
-            ])
+    total_pairs = len(jobs) * len(prompts)
+    # grounding_budget = int(GROUNDING_RATIO * total_pairs)
 
-            # Label (simulated ground truth)
-            y.append(job["label"])
+    grounding_budget = min(
+        int(GROUNDING_RATIO * total_pairs),
+        MAX_GEMINI_CALLS
+    )
+
+
+    # choose which (job, prompt) pairs get real labels
+    all_pairs = [
+        (i, j)
+        for i in range(len(jobs))
+        for j in range(len(prompts))
+    ]
+    grounded_pairs = set(random.sample(all_pairs, grounding_budget))
+
+    for i, job in enumerate(jobs):
+        for j, prompt in enumerate(prompts):
+            X.append([job["tokens"], prompt["tokens"]])
+
+            if use_real_llm and (i, j) in grounded_pairs:
+                label = query_gemini(job["log"], prompt)
+            else:
+                label = job["label"]  # simulated fallback
+
+            y.append(label)
 
     return np.array(X), np.array(y)
+
 
 
 def train_predictor(X, y, predictor_type="rf"):

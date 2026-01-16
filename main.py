@@ -14,6 +14,7 @@ from evaluation.metrics import (
 )
 
 
+USE_REAL_LLM = True
 
 # Load jobs
 jobs = load_hdfs_jobs(
@@ -31,7 +32,7 @@ PREDICTOR_TYPE = "xgb"   # "rf" or "xgb"
 
 # Train predictor
 # Create training data
-X, y = create_training_data(jobs, prompts)
+X, y = create_training_data(jobs, prompts, use_real_llm=USE_REAL_LLM)
 
 # Train predictor (RF or XGB)
 model = train_predictor(X, y, predictor_type=PREDICTOR_TYPE)
