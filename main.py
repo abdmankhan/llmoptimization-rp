@@ -20,7 +20,7 @@ USE_REAL_LLM = True
 jobs = load_hdfs_jobs(
     "hdfs_data/HDFS.log",
     "hdfs_data/preprocessed/anomaly_label.csv",
-    max_jobs=3000
+    max_jobs=50000
 )
 
 prompts = PROMPT_TEMPLATES
