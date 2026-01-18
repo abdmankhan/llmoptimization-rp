@@ -1,0 +1,14 @@
+flowchart LR
+    J[Incoming Job]
+    P[Available Prompt Set]
+    C[Cost Model]
+    M[MLBP Predictor]
+
+    J --> M
+    P --> M
+    C --> O[Optimization Algorithm]
+
+    M --> O
+    O --> R[Prompt Assignment Decision]
+
+    R --> T[Execute / Evaluate]
