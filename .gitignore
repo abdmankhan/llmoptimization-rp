@@ -69,7 +69,10 @@ hdfs_data/
 *.zip
 
 # Results and outputs
-
-
+results/ollama_cache/
 
 Notes/
+
+*.md
+
+diagrams/
