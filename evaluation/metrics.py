@@ -41,9 +41,14 @@ def compute_igd(pareto, reference):
 def compute_delta(pareto):
     """
     Spread metric (Δ)
+    Requires at least 3 points to compute meaningful spread.
     """
     if len(pareto) < 2:
         return float("inf")
+    
+    if len(pareto) == 2:
+        # With only 2 points, spread is perfectly uniform (no variation)
+        return 0.0
 
     pareto_sorted = sorted(pareto, key=lambda x: x["cost"])
     distances = []
@@ -58,6 +63,10 @@ def compute_delta(pareto):
 
     distances = np.array(distances)
     d_mean = np.mean(distances)
+
+    # Guard against division by zero
+    if d_mean == 0:
+        return 0.0
 
     delta = np.sum(np.abs(distances - d_mean)) / (
         (len(distances)) * d_mean

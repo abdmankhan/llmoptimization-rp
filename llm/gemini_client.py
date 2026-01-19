@@ -55,8 +55,6 @@ LOG:
     # text = response["message"]["content"].lower()
     # label = 1 if "anomaly" in text else 0
 
-    import json
-
     content = response["message"]["content"]
 
     try:

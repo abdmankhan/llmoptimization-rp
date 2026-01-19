@@ -17,11 +17,14 @@ def load_hdfs_jobs(log_path, label_path, max_jobs=20000):
             block_id = "blk_" + line.split("blk_")[1].split()[0]
             label = 1 if label_map.get(block_id) == "Anomaly" else 0
 
+            tokens = line.split()
             jobs.append({
                 "id": len(jobs),
                 "log": line.strip(),
                 "text": line.strip(),
-                "tokens": len(line.split()),
+                "tokens": len(tokens),
+                "unique_tokens": len(set(tokens)),  # Vocabulary diversity
+                "has_error": 1 if any(kw in line.lower() for kw in ["error", "exception", "failed", "timeout"]) else 0,
                 "label": label
             })
 
