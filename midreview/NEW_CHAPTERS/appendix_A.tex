@@ -1,0 +1,250 @@
+\chapter{System Architecture and Components}
+\label{app:architecture}
+
+This appendix provides additional technical details about the system architecture, component interfaces, and data flow.
+
+\section{System Architecture Diagram}
+\label{app:architecture_diagram}
+
+Figure~\ref{fig:app_full_architecture} shows the complete system architecture with all components and their interactions.
+
+\begin{figure}[ht]
+    \centering
+    \fbox{\textit{[PLACEHOLDER: Comprehensive system architecture diagram]}}
+    % TODO: Create detailed architecture showing all components, data flow, and file I/O
+    \caption{Complete system architecture showing data flow from input logs through optimization to final visualizations}
+    \label{fig:app_full_architecture}
+\end{figure}
+
+\section{Component Descriptions}
+\label{app:components}
+
+\subsection{Data Loader (jobs/loader.py)}
+\label{app:loader}
+
+\textbf{Purpose}: Parse HDFS log files and extract structured information
+
+\textbf{Inputs}:
+\begin{itemize}
+    \item Raw log file path (e.g., \texttt{hdfs\_data/HDFS.log})
+    \item Preprocessed label file (\texttt{hdfs\_data/preprocessed/anomaly\_label.csv})
+\end{itemize}
+
+\textbf{Outputs}:
+\begin{itemize}
+    \item List of log entry objects with fields: timestamp, level, component, message, label
+    \item Feature vectors: $(tokens, unique\_tokens, has\_error)$
+\end{itemize}
+
+\textbf{Key Functions}:
+\begin{itemize}
+    \item \texttt{load\_logs()}: Parse log file and create log entry objects
+    \item \texttt{extract\_features()}: Compute feature vectors for each entry
+    \item \texttt{load\_labels()}: Load ground truth anomaly labels
+\end{itemize}
+
+\subsection{Prompt Builder (prompts/builder.py \& templates.py)}
+\label{app:prompts}
+
+\textbf{Purpose}: Generate LLM prompts for different strategies
+
+\textbf{Prompt Templates}:
+\begin{enumerate}
+    \item Simple (10 tokens): Minimal instruction
+    \item Standard (25 tokens): Detailed task description
+    \item FewShot1 (50 tokens): One example provided
+    \item FewShot3 (90 tokens): Three examples provided
+\end{enumerate}
+
+\textbf{Key Functions}:
+\begin{itemize}
+    \item \texttt{build\_prompt(log\_entry, strategy)}: Construct prompt string
+    \item \texttt{get\_cost(strategy)}: Return token cost for strategy
+\end{itemize}
+
+\subsection{LLM Client (llm/gemini\_client.py)}
+\label{app:llm}
+
+\textbf{Purpose}: Interface with Ollama API and manage response caching
+
+\textbf{Caching Strategy}:
+\begin{enumerate}
+    \item Compute MD5 hash: \texttt{hash = md5(log\_entry + strategy)}
+    \item Check cache: Look for \texttt{results/ollama\_cache/\{hash\}.json}
+    \item If cached: Load and return
+    \item If not cached: Query LLM, save response, return
+\end{enumerate}
+
+\textbf{Cache File Format}:
+\begin{verbatim}
+{
+    "label": 0  // or 1 for anomaly
+}
+\end{verbatim}
+
+\textbf{Key Functions}:
+\begin{itemize}
+    \item \texttt{query\_llm(prompt)}: Send prompt to Ollama API
+    \item \texttt{parse\_response(response)}: Extract classification label
+    \item \texttt{cache\_response(hash, label)}: Save to cache
+\end{itemize}
+
+\subsection{Predictor (predictors/mlbp.py)}
+\label{app:predictor}
+
+\textbf{Purpose}: Train XGBoost model to predict prompting strategy success
+
+\textbf{Training Process}:
+\begin{enumerate}
+    \item Query LLM for each (task, strategy) pair (or use cache)
+    \item Create training dataset: features + success labels
+    \item Train XGBoost with cross-validation
+    \item Evaluate on held-out test set
+\end{enumerate}
+
+\textbf{Prediction Process}:
+\begin{enumerate}
+    \item Extract features for all tasks
+    \item For each task and each strategy, predict success probability
+    \item Generate $N \times K$ probability matrix
+    \item Save matrix to \texttt{results/matrices/}
+\end{enumerate}
+
+\textbf{Model Parameters}:
+\begin{itemize}
+    \item \texttt{n\_estimators=400}: Number of boosting rounds
+    \item \texttt{max\_depth=8}: Maximum tree depth
+    \item \texttt{learning\_rate=0.05}: Step size shrinkage
+    \item \texttt{subsample=0.8}: Fraction of samples per tree
+\end{itemize}
+
+\subsection{Optimizers (optimizers/)}
+\label{app:optimizers}
+
+\textbf{Purpose}: Find Pareto-optimal assignments of strategies to tasks
+
+\textbf{Common Interface}:
+\begin{itemize}
+    \item \texttt{optimize(prob\_matrix, costs, n\_runs=3)}: Run optimization
+    \item \texttt{evaluate(solution)}: Compute accuracy and cost objectives
+    \item \texttt{extract\_pareto(solutions)}: Identify non-dominated solutions
+\end{itemize}
+
+\textbf{NSGA-II Specific}:
+\begin{itemize}
+    \item \texttt{fast\_non\_dominated\_sort()}: Rank solutions by dominance
+    \item \texttt{crowding\_distance\_assignment()}: Maintain diversity
+    \item \texttt{tournament\_selection()}: Select parents
+\end{itemize}
+
+\textbf{SPEA2 Specific}:
+\begin{itemize}
+    \item \texttt{calculate\_fitness()}: Strength-based fitness
+    \item \texttt{environmental\_selection()}: Manage archive
+    \item \texttt{truncate\_archive()}: Remove similar solutions
+\end{itemize}
+
+\subsection{Evaluation (evaluation/)}
+\label{app:evaluation}
+
+\textbf{Components}:
+\begin{itemize}
+    \item \texttt{baseline.py}: Compute single-strategy baselines
+    \item \texttt{metrics.py}: Calculate IGD, Delta, Mn metrics
+    \item \texttt{pareto.py}: Extract and compare Pareto fronts
+\end{itemize}
+
+\textbf{Key Functions}:
+\begin{itemize}
+    \item \texttt{compute\_baselines()}: Evaluate all-same-strategy assignments
+    \item \texttt{calculate\_igd()}: Inverted Generational Distance
+    \item \texttt{calculate\_spread()}: Solution distribution metric
+    \item \texttt{merge\_pareto\_fronts()}: Combine runs from same algorithm
+\end{itemize}
+
+\subsection{Visualization (visualization/plots.py)}
+\label{app:visualization}
+
+\textbf{Purpose}: Generate plots comparing algorithms and baselines
+
+\textbf{Plot Types}:
+\begin{enumerate}
+    \item Pareto front scatter plots
+    \item Algorithm comparison overlays
+    \item Baseline strategy markers
+    \item Metric comparison bar charts
+\end{enumerate}
+
+\textbf{Output Files}:
+\begin{itemize}
+    \item \texttt{results/figures/pareto\_with\_baselines.png}
+    \item \texttt{results/tables/table3\_optimizer\_comparison.csv}
+    \item \texttt{results/tables/baseline\_results.csv}
+\end{itemize}
+
+\section{Data Flow Diagram}
+\label{app:dataflow}
+
+Figure~\ref{fig:app_dataflow} illustrates the complete data flow through the system.
+
+\begin{figure}[ht]
+    \centering
+    \fbox{\textit{[PLACEHOLDER: Data flow diagram]}}
+    % TODO: Add data flow diagram showing inputs, outputs, and intermediate files
+    \caption{Data flow diagram showing how data moves through system components}
+    \label{fig:app_dataflow}
+\end{figure}
+
+\section{File Structure}
+\label{app:files}
+
+\textbf{Input Files}:
+\begin{itemize}
+    \item \texttt{hdfs\_data/HDFS.log}: Raw log file
+    \item \texttt{hdfs\_data/preprocessed/anomaly\_label.csv}: Ground truth labels
+\end{itemize}
+
+\textbf{Cache Files}:
+\begin{itemize}
+    \item \texttt{results/ollama\_cache/\{hash\}.json}: LLM response cache (20,000 files when complete)
+\end{itemize}
+
+\textbf{Intermediate Files}:
+\begin{itemize}
+    \item \texttt{results/matrices/probability\_matrix.npy}: NumPy format
+    \item \texttt{results/matrices/probability\_matrix.csv}: CSV format
+\end{itemize}
+
+\textbf{Output Files}:
+\begin{itemize}
+    \item \texttt{results/figures/pareto\_with\_baselines.png}: Main visualization
+    \item \texttt{results/tables/baseline\_results.csv}: Baseline performance
+    \item \texttt{results/tables/table3\_optimizer\_comparison.csv}: Algorithm metrics
+\end{itemize}
+
+\section{Configuration Parameters}
+\label{app:config}
+
+\textbf{Dataset Configuration}:
+\begin{itemize}
+    \item Number of log entries: 5,000
+    \item Train/test split: 80\%/20\%
+    \item Random seed: 42 (reproducibility)
+\end{itemize}
+
+\textbf{Optimization Configuration}:
+\begin{itemize}
+    \item NSGA-II population: 100
+    \item NSGA-II generations: 50
+    \item SPEA2 archive size: 100
+    \item Random search iterations: 1,000
+    \item Independent runs per algorithm: 3
+\end{itemize}
+
+\textbf{Prompting Strategy Costs} (tokens):
+\begin{itemize}
+    \item Simple: 10
+    \item Standard: 25
+    \item FewShot1: 50
+    \item FewShot3: 90
+\end{itemize}

@@ -1,0 +1,85 @@
+\chapter{Introduction}
+\label{ch:intro}
+
+\section{Background}
+\label{sec:intro_background}
+
+Large Language Models have become increasingly common in enterprise environments. These models can understand and process natural language quite effectively, but using them comes with significant costs---especially when dealing with high-volume tasks. Log analysis systems, for instance, may need to process thousands of log entries daily~\citep{hdfs2009}, which can quickly become expensive.
+
+Distributed systems today produce massive amounts of log data. This data needs constant monitoring to detect anomalies, diagnose faults, and assess system health. Rule-based methods don't handle the variety in log patterns well, and having humans manually inspect logs at this scale simply isn't feasible. LLMs seem like a good fit here because they can analyze logs flexibly without needing extensive manual feature engineering~\citep{ref_paper2024}.
+
+The problem is that using the most powerful LLM configuration for every single task wastes computational resources. We know that different prompting approaches---from simple instructions to detailed few-shot examples---have different costs and accuracy levels. This raises an important question: can we be smarter about which prompting strategy we use for which task?
+
+\section{Problem Statement}
+\label{sec:intro_problem}
+
+The core problem we're tackling is straightforward: \textbf{how do we cut down LLM costs for classification tasks without sacrificing accuracy?}
+
+Breaking this down, we face several challenges:
+\begin{itemize}
+    \item Prompting strategies vary in token cost (10 to 90 tokens) and how often they work correctly
+    \item Simpler prompts might work fine for some tasks, so why pay for expensive ones everywhere?
+    \item Figuring out which strategy will work for a specific log entry isn't obvious just from looking at it
+    \item We're dealing with competing goals: get high accuracy, keep costs low
+\end{itemize}
+
+Take a concrete example. Say we have 5,000 log entries to classify for anomalies. If we use the most detailed (expensive) prompting for everything, we'll probably get good results but the token costs will add up fast. On the flip side, using only the cheapest simple prompts saves money but we'll likely miss some important anomalies. What we want is a system that picks the right prompting strategy for each log entry based on what that entry actually needs.
+
+\section{Motivation}
+\label{sec:intro_motivation}
+
+Why does this work matter? A few reasons:
+
+\textbf{It's about the money.} Running LLMs in production gets expensive quickly. When you're processing millions of log entries every day, even shaving off a few percent in token usage means real cost savings. If we can make LLM solutions cheaper, more organizations will actually be able to use them.
+
+\textbf{Wasting resources doesn't make sense.} Using complex prompts when simple ones would work is inefficient. We're burning through compute and energy for no good reason. Better to optimize resource use while keeping the same functionality.
+
+\textbf{Scalability matters.} Right now, plenty of organizations look at LLM deployment costs and just say no. They see the value but can't justify the expense. A cost-optimized system changes that calculation and makes adoption feasible for more use cases.
+
+\textbf{It's an interesting research problem.} Combining ML prediction with multi-objective optimization isn't something we see every day in the LLM space. This connects to search-based software engineering~\citep{sbse2001} in a pretty novel way.
+
+\section{Objectives}
+\label{sec:intro_objectives}
+
+For this mid-term project, here's what we're trying to accomplish:
+
+\begin{enumerate}
+    \item \textbf{Understand the trade-offs.} We need to figure out how different prompting strategies (simple, standard, few-shot) actually perform on log classification. What's the accuracy? What does it cost in tokens? How do these relate?
+    
+    \item \textbf{Build a predictor.} Create a machine learning model that can look at a log entry's features (things like token count, unique tokens, whether there are errors) and predict which prompting strategies are likely to work.
+    
+    \item \textbf{Get the optimization working.} Implement three different algorithms---Random Search as a baseline, plus NSGA-II and SPEA2. These should find good ways to assign prompting strategies to logs, giving us different options on the accuracy-cost spectrum.
+    
+    \item \textbf{Test on real data.} Run experiments on the HDFS log dataset (5,000 entries) to see if this actually works and how it compares to naive baseline approaches.
+    
+    \item \textbf{Show it's worth doing.} Demonstrate that we can save meaningful costs while keeping accuracy at acceptable levels. Basically prove the concept works.
+\end{enumerate}
+
+\section{Scope and Limitations}
+\label{sec:intro_scope}
+
+\textbf{What we're covering:} This mid-term work deals with the core framework---data preprocessing, feature extraction, the ML predictor, multi-objective optimization, and some initial experiments. We're testing everything on HDFS logs using four different prompting strategies.
+
+\textbf{What's not done yet:} The implementation is about 60\% complete at this point. Main gaps:
+\begin{itemize}
+    \item LLM response cache is partial---we have 584 cached responses but need around 20,000 total
+    \item Predictor accuracy is sitting at 79\%, still working toward 85\%+
+    \item Only tested on HDFS dataset so far, no other datasets yet
+    \item No interface for real-time deployment
+    \item The optimization is static---once we pick a schedule, we don't adjust it dynamically
+\end{itemize}
+
+\section{Report Organization}
+\label{sec:intro_organization}
+
+Here's how the rest of this report is structured:
+
+\textbf{Chapter~\ref{ch:lit_rev}} goes through related work---LLMs for log analysis, how prompt engineering works, and multi-objective optimization algorithms.
+
+\textbf{Chapter~\ref{ch:method}} explains our approach: system design, how we preprocess data, the ML prediction setup, and the optimization algorithms we're using.
+
+\textbf{Chapter~\ref{ch:results}} shows what we've got so far---predictor performance numbers, baseline comparisons, and what the optimization algorithms produced.
+
+\textbf{Chapter~\ref{ch:discussion}} digs into what the results mean, what problems we've run into, and where we stand on the objectives.
+
+\textbf{Chapter~\ref{ch:conclusion}} wraps up what we've accomplished, lays out what still needs to be done before end-term, and talks about potential future directions.

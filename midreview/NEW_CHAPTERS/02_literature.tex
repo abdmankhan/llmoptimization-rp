@@ -1,0 +1,98 @@
+\chapter{Literature Review}
+\label{ch:lit_rev}
+
+This chapter reviews relevant prior work and theoretical foundations that inform our approach to optimizing LLM utilization through schedule optimization.
+
+\section{Large Language Models in Log Analysis}
+\label{sec:lit_llm_logs}
+
+Log analysis and anomaly detection have traditionally relied on pattern matching, statistical methods, and rule-based systems~\citep{hdfs2009}. The HDFS dataset, introduced by~\cite{hdfs2009}, contains logs from Hadoop Distributed File System operations and has become a benchmark for log-based anomaly detection research.
+
+Recent research has demonstrated that Large Language Models can effectively understand log semantics and detect anomalies without extensive feature engineering~\citep{gpt3_brown2020}. LLMs can process unstructured log messages, identify patterns, and make classification decisions based on semantic understanding rather than predefined rules. However, the computational cost of LLM inference remains a practical concern for production deployment, particularly when processing high volumes of log data.
+
+\section{Prompt Engineering}
+\label{sec:lit_prompt_eng}
+
+Prompt engineering refers to the practice of designing input instructions to guide LLM behavior and improve task performance. Research has shown that prompt complexity significantly affects both accuracy and cost:
+
+\textbf{Simple Prompts}: Direct, minimal instructions with low token count. These prompts are computationally efficient but may lack context for complex tasks. Example: ``Classify this log entry as normal or anomaly.''
+
+\textbf{Standard Prompts}: More detailed instructions that clarify the task, provide context, and specify output format. These prompts balance clarity with reasonable token usage. Example: ``Analyze the following HDFS log entry and determine whether it represents normal system operation or an anomaly. Respond with either 'normal' or 'anomaly'.''
+
+\textbf{Few-Shot Prompts}: Include example inputs and outputs to demonstrate the desired behavior~\citep{gpt3_brown2020}. One-shot prompts provide a single example, while few-shot prompts provide multiple examples (typically 3-5). These prompts improve accuracy by showing the model expected patterns but incur higher token costs.
+
+The choice of prompting strategy creates a fundamental trade-off between result quality and operational cost, motivating the need for intelligent strategy assignment.
+
+\section{Multi-Objective Optimization}
+\label{sec:lit_moo}
+
+Multi-objective optimization addresses problems where multiple conflicting objectives must be simultaneously optimized. In our context, we aim to maximize classification accuracy while minimizing computational cost. Since these objectives conflict (higher accuracy typically requires more expensive prompts), there is no single optimal solution but rather a set of Pareto-optimal solutions.
+
+\subsection{NSGA-II Algorithm}
+\label{subsec:lit_nsga2}
+
+The Non-dominated Sorting Genetic Algorithm II (NSGA-II)~\citep{deb2002nsga2} is a widely-used multi-objective evolutionary algorithm. Key features include:
+
+\begin{itemize}
+    \item \textbf{Non-dominated sorting}: Solutions are ranked into fronts based on Pareto dominance
+    \item \textbf{Crowding distance}: Maintains population diversity by favoring solutions in less crowded regions
+    \item \textbf{Elitism}: Best solutions are preserved across generations
+    \item \textbf{Computational efficiency}: $O(MN^2)$ complexity where $M$ is objectives and $N$ is population size
+\end{itemize}
+
+NSGA-II has been successfully applied to various software engineering problems~\citep{sbse2001} and is known for producing well-distributed Pareto fronts.
+
+\subsection{SPEA2 Algorithm}
+\label{subsec:lit_spea2}
+
+The Strength Pareto Evolutionary Algorithm 2 (SPEA2)~\citep{zitzler2001spea2} employs an archive-based approach:
+
+\begin{itemize}
+    \item \textbf{External archive}: Maintains an explicit set of non-dominated solutions
+    \item \textbf{Fitness assignment}: Based on the number of solutions each individual dominates
+    \item \textbf{Density estimation}: Uses $k$-nearest neighbor distance to maintain diversity
+    \item \textbf{Archive truncation}: Removes similar solutions when archive exceeds size limit
+\end{itemize}
+
+SPEA2 typically generates fewer solutions than NSGA-II but with strong convergence properties.
+
+\section{Machine Learning for Prediction}
+\label{sec:lit_ml_pred}
+
+The concept of using machine learning to predict LLM behavior is inspired by the ML-Based Predictor (MLBP) approach described in the reference paper~\citep{ref_paper2024}. The key insight is that certain task characteristics correlate with LLM success probability for different prompting strategies.
+
+\textbf{XGBoost}~\citep{chen2016xgboost} is an optimized gradient boosting implementation that has achieved strong performance on various classification tasks. Its advantages include:
+\begin{itemize}
+    \item Handling of non-linear relationships between features
+    \item Built-in feature importance analysis
+    \item Regularization to prevent overfitting
+    \item Efficient training on moderate-sized datasets
+\end{itemize}
+
+In our context, XGBoost learns to predict prompting strategy success based on log entry features such as token count, unique token count, and error keyword presence.
+
+\section{Search-Based Software Engineering}
+\label{sec:lit_sbse}
+
+Search-Based Software Engineering (SBSE)~\citep{sbse2001} reformulates software engineering problems as optimization problems. The application of SBSE to LLM optimization represents a novel direction where:
+
+\begin{itemize}
+    \item \textbf{Search space}: All possible assignments of prompting strategies to tasks
+    \item \textbf{Fitness functions}: Classification accuracy (maximize) and token cost (minimize)
+    \item \textbf{Search techniques}: Evolutionary algorithms (NSGA-II, SPEA2) and random search
+    \item \textbf{Solution representation}: Integer arrays mapping each task to a prompting strategy
+\end{itemize}
+
+This formulation enables systematic exploration of the trade-off space between competing objectives.
+
+\section{Gap in Existing Work}
+\label{sec:lit_gap}
+
+While prior work has explored LLM applications to log analysis and multi-objective optimization independently, there is limited research on optimizing LLM utilization through intelligent prompting strategy assignment. The reference paper~\citep{ref_paper2024} provides the theoretical foundation, but practical implementation with real datasets and thorough evaluation remains an open question. This project addresses that gap through:
+
+\begin{enumerate}
+    \item Implementation of complete pipeline from data preprocessing to optimization
+    \item Evaluation on real-world HDFS log dataset
+    \item Comparison of multiple optimization algorithms
+    \item Analysis of cost-accuracy trade-offs in practical settings
+\end{enumerate}

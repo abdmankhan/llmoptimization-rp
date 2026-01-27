@@ -1,0 +1,85 @@
+\chapter{Introduction}
+\label{ch:intro}
+
+\section{Background}
+\label{sec:intro_background}
+
+The widespread adoption of Large Language Models (LLMs) in enterprise applications has brought both opportunities and challenges. While these models offer unprecedented capabilities in understanding and processing natural language, their operational costs can be substantial, particularly in high-volume scenarios such as log analysis systems that process thousands of entries per day~\citep{hdfs2009}.
+
+Modern distributed systems generate vast amounts of log data that require continuous monitoring and analysis for anomaly detection, fault diagnosis, and system health assessment. Traditional rule-based approaches struggle with the variety and complexity of log patterns, while manual inspection is impractical at scale. LLMs provide an attractive solution by offering flexible, context-aware analysis capabilities without extensive feature engineering~\citep{ref_paper2024}.
+
+However, deploying powerful LLM models for every task regardless of complexity leads to unnecessary computational expenditure. Different prompting strategies (simple instructions versus detailed few-shot examples) exhibit varying accuracy-cost trade-offs. This observation motivates the core question: \textit{Can we intelligently assign different prompting strategies to different tasks to optimize overall system performance?}
+
+\section{Problem Statement}
+\label{sec:intro_problem}
+
+The central problem addressed in this project is: \textbf{How can we minimize the cost of utilizing Large Language Models for classification tasks while maintaining high accuracy?}
+
+This involves several sub-problems:
+\begin{itemize}
+    \item Different prompting strategies have different token costs (ranging from 10 to 90 tokens) and varying success rates
+    \item Not all tasks require the most expensive prompting strategy to achieve correct classification
+    \item Predicting which strategy will succeed for a given task based on log characteristics is non-trivial
+    \item There exists a multi-objective optimization problem: maximizing overall accuracy while minimizing total token cost
+\end{itemize}
+
+Consider a system processing 5,000 log entries for anomaly detection. Using the most detailed prompting strategy for all entries might achieve high accuracy but at significant cost. Conversely, using only simple prompts reduces costs but may miss critical anomalies. An intelligent system that assigns appropriate prompting strategies based on task characteristics could achieve near-optimal accuracy at a fraction of the cost.
+
+\section{Motivation}
+\label{sec:intro_motivation}
+
+This research is motivated by several key factors:
+
+\textbf{Economic Viability}: Production LLM deployments can incur substantial operational costs. For organizations processing millions of log entries daily, even small percentage reductions in token usage translate to significant cost savings. Making LLM-based solutions economically viable for cost-sensitive applications expands their applicability.
+
+\textbf{Resource Efficiency}: Optimal resource utilization aligns with sustainable computing practices. By avoiding unnecessary use of complex prompting strategies, we reduce computational overhead and energy consumption without sacrificing functionality.
+
+\textbf{Scalability}: Many organizations cannot justify LLM deployment costs despite potential benefits. A system that intelligently minimizes costs while maintaining quality enables wider adoption of LLM-based solutions.
+
+\textbf{Scientific Interest}: This problem represents an interesting application of search-based software engineering~\citep{sbse2001} to LLM optimization. The combination of machine learning prediction with multi-objective optimization provides a rich research direction.
+
+\section{Objectives}
+\label{sec:intro_objectives}
+
+The primary objectives of this mid-term project work are:
+
+\begin{enumerate}
+    \item \textbf{Study cost-accuracy trade-offs}: Analyze how different LLM prompting strategies (simple, standard, few-shot) perform on log analysis tasks with respect to both classification accuracy and token cost.
+    
+    \item \textbf{Develop ML-based predictor}: Implement a machine learning model that predicts the success probability of different prompting strategies for given log entries based on extracted features (token count, unique tokens, error presence).
+    
+    \item \textbf{Implement multi-objective optimization}: Develop three optimization algorithms (Random Search, NSGA-II, SPEA2) that find optimal assignments of prompting strategies to tasks, producing Pareto fronts representing different cost-accuracy trade-offs.
+    
+    \item \textbf{Evaluate on real datasets}: Conduct preliminary experiments on the HDFS log dataset with 5,000 log entries to validate the approach and compare against baseline strategies.
+    
+    \item \textbf{Demonstrate feasibility}: Show measurable cost savings potential while maintaining acceptable accuracy levels, establishing proof-of-concept for the optimization framework.
+\end{enumerate}
+
+\section{Scope and Limitations}
+\label{sec:intro_scope}
+
+\textbf{Scope}: This mid-term work focuses on implementing the core framework including data preprocessing, feature extraction, ML-based prediction, multi-objective optimization, and preliminary evaluation. The system is tested on a single dataset (HDFS logs) with four prompting strategies.
+
+\textbf{Limitations}: The current implementation represents approximately 60\% completion. Key limitations include:
+\begin{itemize}
+    \item Partial LLM response caching (584 out of 20,000 required)
+    \item Predictor accuracy at 79\% (target: 85\%+)
+    \item Single dataset evaluation (HDFS only)
+    \item No real-time deployment interface
+    \item Static schedule optimization (no dynamic re-optimization)
+\end{itemize}
+
+\section{Report Organization}
+\label{sec:intro_organization}
+
+This mid-term progress report is organized as follows:
+
+\textbf{Chapter~\ref{ch:lit_rev}} reviews relevant literature including LLMs in log analysis, prompt engineering strategies, and multi-objective optimization algorithms.
+
+\textbf{Chapter~\ref{ch:method}} describes the methodology including system architecture, data preprocessing, ML prediction framework, and optimization algorithms.
+
+\textbf{Chapter~\ref{ch:results}} presents preliminary experimental results including predictor performance, baseline comparisons, and optimization algorithm outcomes.
+
+\textbf{Chapter~\ref{ch:discussion}} analyzes the results, discusses current challenges and limitations, and evaluates progress toward objectives.
+
+\textbf{Chapter~\ref{ch:conclusion}} summarizes achievements, outlines remaining work for end-term submission, and discusses future research directions.

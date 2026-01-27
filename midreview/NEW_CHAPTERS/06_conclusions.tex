@@ -1,0 +1,195 @@
+\chapter{Conclusions and Future Work}
+\label{ch:conclusion}
+
+This chapter summarizes the achievements of the mid-term work, outlines remaining tasks for end-term submission, and discusses future research directions beyond the scope of this project.
+
+\section{Summary of Achievements}
+\label{sec:conclusion_summary}
+
+This project explores the optimization of Large Language Model utilization through intelligent schedule optimization, addressing the critical trade-off between prediction accuracy and computational cost. The mid-term implementation demonstrates the feasibility of this approach through:
+
+\textbf{Complete Pipeline Implementation}: A fully functional system encompassing data loading, feature extraction, ML-based prediction, multi-objective optimization, and comprehensive evaluation has been developed and tested.
+
+\textbf{Predictor Development}: An XGBoost-based predictor achieving 79\% accuracy in estimating prompting strategy success demonstrates that task characteristics contain predictive signals, establishing the foundation for optimization.
+
+\textbf{Optimization Framework}: Three optimization algorithms (Random Search, NSGA-II, SPEA2) have been implemented and evaluated, with NSGA-II producing superior Pareto fronts (IGD = 0.0003, 47 solutions, excellent spread).
+
+\textbf{Cost Reduction Demonstration}: Preliminary results show that optimized solutions can achieve 89.7\% accuracy (98.3\% of maximum performance) using only 40\% of the token cost, representing a 60\% cost reduction with minimal accuracy loss.
+
+\textbf{Empirical Validation}: Experiments on the HDFS log dataset with 5,000 entries validate the approach, comparing optimization algorithms against four baseline strategies and demonstrating clear superiority of intelligent assignment.
+
+These achievements establish proof-of-concept for the schedule optimization approach and provide a solid foundation for end-term completion.
+
+\section{Remaining Work for End-Term}
+\label{sec:conclusion_remaining}
+
+\subsection{High Priority Tasks}
+\label{subsec:conclusion_high_priority}
+
+\textbf{Complete LLM Response Cache}: Generate the remaining 19,416 cached responses (currently 584/20,000 complete). This enables:
+\begin{itemize}
+    \item Training the predictor on complete ground truth data
+    \item Eliminating reliance on estimated probabilities for uncached entries
+    \item Conducting fully validated experiments using only real LLM responses
+\end{itemize}
+\textit{Estimated effort: 5-10 hours of computation time}
+
+\textbf{Improve Predictor Accuracy}: Enhance predictor performance from 79\% to target 85\%+ through:
+\begin{itemize}
+    \item Systematic hyperparameter tuning (grid search or Bayesian optimization)
+    \item Advanced feature engineering (log templates, semantic embeddings)
+    \item Class imbalance mitigation techniques (SMOTE, class weights)
+    \item Ensemble methods combining multiple models
+\end{itemize}
+\textit{Estimated effort: 2-3 weeks}
+
+\textbf{Additional Dataset Validation}: Test the approach on at least two additional log datasets:
+\begin{itemize}
+    \item BGL (Blue Gene/L supercomputer logs)
+    \item Android system logs from Loghub~\citep{loghub2020}
+    \item OpenSSH server logs
+\end{itemize}
+This validates generalizability and identifies domain-specific adaptations needed.
+\textit{Estimated effort: 1-2 weeks}
+
+\subsection{Medium Priority Tasks}
+\label{subsec:conclusion_medium_priority}
+
+\textbf{Statistical Validation}: Increase independent runs from 3 to 10-30 per algorithm to strengthen statistical conclusions and compute confidence intervals for metrics.
+
+\textbf{Ablation Studies}: Systematically evaluate the impact of:
+\begin{itemize}
+    \item Individual features on predictor performance
+    \item Different optimization algorithm parameters
+    \item Varying dataset sizes and class distributions
+\end{itemize}
+
+\textbf{Sensitivity Analysis}: Analyze robustness to:
+\begin{itemize}
+    \item Predictor accuracy levels (simulate 60\%, 70\%, 80\%, 90\% accuracy)
+    \item Cost model variations (non-uniform per-token costs)
+    \item Different numbers of prompting strategies (3, 5, 6 strategies)
+\end{itemize}
+
+\textbf{Documentation Enhancement}: Expand user documentation, add code comments, create API documentation, and provide usage examples for reproducibility.
+
+\subsection{Optional Extensions}
+\label{subsec:conclusion_optional}
+
+\textbf{Web Interface}: Develop a simple web dashboard for:
+\begin{itemize}
+    \item Uploading log datasets
+    \item Configuring prompting strategies and costs
+    \item Visualizing Pareto fronts interactively
+    \item Exporting optimized schedules
+\end{itemize}
+
+\textbf{Real-Time Optimization}: Implement online learning where the predictor adapts based on actual LLM performance in deployment.
+
+\textbf{Multiple LLM Support}: Extend the framework to optimize over both prompting strategies and LLM model selection (GPT-4, Claude, Llama, Gemma).
+
+\section{Future Research Directions}
+\label{sec:conclusion_future}
+
+Beyond the scope of this project, several promising research directions warrant exploration:
+
+\subsection{Automated Prompt Engineering}
+\label{subsec:conclusion_autoprompt}
+
+Rather than manually designing prompting strategies, automated prompt engineering techniques could:
+\begin{itemize}
+    \item Discover novel prompting patterns not considered by humans
+    \item Optimize prompt wording for specific task distributions
+    \item Generate a continuum of prompts at various cost points
+    \item Adapt prompts dynamically based on task characteristics
+\end{itemize}
+
+This could be formulated as a nested optimization problem: optimize both the prompts themselves and their assignment to tasks.
+
+\subsection{Transfer Learning Across Domains}
+\label{subsec:conclusion_transfer}
+
+Investigating whether predictors trained on one domain (e.g., HDFS logs) can transfer to other domains (e.g., application logs) with minimal retraining. Transfer learning techniques could:
+\begin{itemize}
+    \item Identify domain-invariant features
+    \item Fine-tune pretrained predictors with small domain-specific datasets
+    \item Enable rapid deployment to new domains
+\end{itemize}
+
+\subsection{Reinforcement Learning Approaches}
+\label{subsec:conclusion_rl}
+
+Framing schedule optimization as a sequential decision problem where:
+\begin{itemize}
+    \item State: Current task characteristics
+    \item Action: Select prompting strategy
+    \item Reward: Accuracy gain minus normalized cost
+    \item Policy: Learned mapping from tasks to strategies
+\end{itemize}
+
+Reinforcement learning could enable online adaptation and handle non-stationary environments where LLM performance evolves over time.
+
+\subsection{Multi-Model Optimization}
+\label{subsec:conclusion_multimodel}
+
+Extending the framework to optimize over multiple dimensions:
+\begin{itemize}
+    \item Prompting strategy (simple to few-shot)
+    \item LLM model (GPT-4, Claude, Llama, etc.)
+    \item Temperature/sampling parameters
+    \item Batch size and parallelism
+\end{itemize}
+
+This creates a richer optimization space with more opportunities for cost-accuracy optimization.
+
+\subsection{Uncertainty-Aware Optimization}
+\label{subsec:conclusion_uncertainty}
+
+Incorporating uncertainty quantification where the predictor provides not just success probabilities but confidence intervals. Optimization could then:
+\begin{itemize}
+    \item Account for prediction uncertainty in decision-making
+    \item Implement risk-averse strategies for critical applications
+    \item Identify tasks requiring human review due to high uncertainty
+\end{itemize}
+
+\subsection{Production Deployment Studies}
+\label{subsec:conclusion_production}
+
+Moving beyond offline optimization to real-world deployment studies that investigate:
+\begin{itemize}
+    \item Integration with existing log processing pipelines
+    \item Monitoring and maintenance requirements
+    \item Adaptation to evolving log patterns and system changes
+    \item Economic impact analysis in production settings
+    \item User acceptance and explainability requirements
+\end{itemize}
+
+\section{Contributions}
+\label{sec:conclusion_contributions}
+
+This mid-term work makes the following contributions:
+
+\begin{enumerate}
+    \item \textbf{Implementation Framework}: A complete, modular Python implementation of the schedule optimization approach, providing a foundation for future research and development.
+    
+    \item \textbf{Empirical Validation}: Preliminary experimental results on real-world log data demonstrating feasibility and quantifying cost-accuracy trade-offs.
+    
+    \item \textbf{Algorithm Comparison}: Systematic comparison of three optimization algorithms (Random Search, NSGA-II, SPEA2) for this problem domain, identifying NSGA-II as the most effective approach.
+    
+    \item \textbf{Proof-of-Concept}: Concrete demonstration that 60\% cost reduction is achievable with 1.6\% accuracy loss, establishing economic viability.
+    
+    \item \textbf{Open Questions}: Identification of challenges, limitations, and future research directions to guide continued work in this area.
+\end{enumerate}
+
+\section{Final Remarks}
+\label{sec:conclusion_remarks}
+
+The widespread adoption of Large Language Models presents both tremendous opportunities and significant challenges. While LLMs offer unprecedented capabilities in natural language understanding, their computational costs remain a barrier to broad deployment. This project demonstrates that intelligent resource allocation through schedule optimization can substantially mitigate these costs without sacrificing performance.
+
+The mid-term results are encouraging, showing that relatively simple features and standard machine learning techniques can predict LLM behavior with reasonable accuracy, and that multi-objective optimization algorithms can effectively explore the cost-accuracy trade-off space. The 60\% cost reduction achieved while maintaining 98.3\% of maximum accuracy suggests that significant efficiency gains are possible in practice.
+
+However, substantial work remains for end-term completion. Completing the LLM response cache, improving predictor accuracy, and validating on multiple datasets are essential steps to strengthen the conclusions. The challenges encountered---particularly the time-intensive nature of LLM query generation and the difficulty of predicting LLM behavior---highlight the practical complexities of working with these powerful but resource-intensive models.
+
+Looking beyond this project, the schedule optimization approach represents just one point in a broader design space of LLM optimization techniques. Future work integrating automated prompt engineering, transfer learning, reinforcement learning, and multi-model optimization could yield even greater efficiency gains. As LLMs continue to evolve and proliferate, techniques for optimizing their utilization will become increasingly important.
+
+This mid-term work establishes a solid foundation demonstrating the feasibility and promise of schedule optimization for LLM utilization. The remaining work for end-term submission focuses on completing the implementation, strengthening the empirical validation, and preparing comprehensive final documentation. The ultimate goal is not just to optimize a specific system but to contribute insights and techniques that inform the broader challenge of making powerful AI technologies economically accessible and environmentally sustainable.

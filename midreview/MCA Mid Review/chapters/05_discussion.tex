@@ -1,0 +1,105 @@
+\chapter{Discussion and Analysis}
+\label{ch:discussion}
+
+Let's dig into what the results actually mean, what problems we're facing, and how far we've come toward our original goals.
+
+\section{Analysis of Results}
+\label{sec:discussion_analysis}
+
+\subsection{Predictor Performance Analysis}
+\label{subsec:discussion_predictor}
+
+The XGBoost predictor hitting 79\% accuracy is decent---it's a good starting point, but there's clearly room to do better. A few things are holding it back:
+
+\textbf{The features are pretty basic.} Right now we're only using token count, unique tokens, and whether errors are present. That captures some log characteristics but misses a lot. We could try:
+\begin{itemize}
+    \item Matching against log templates (finding structured patterns in messages)
+    \item Component-specific stuff (different system parts probably have different patterns)
+    \item Time-based features (patterns might vary by time of day or sequence)
+    \item Semantic embeddings that capture what the log actually means
+\end{itemize}
+
+\textbf{The class imbalance is rough.} We've got 96\% normal logs and only 4\% anomalies. Even with class weights and stratified sampling, this imbalance probably hurts performance on the anomaly cases. That's a problem since detecting anomalies is the whole point.
+
+\textbf{Training on LLM outputs has issues.} The predictor learns from LLM responses, not ground truth labels. So if the LLM screws up, the predictor learns those mistakes too. Some of that 79\% might be reflecting the LLM's limitations rather than the predictor's.
+
+That said, 79\% is good enough to show the concept works. The feature importance analysis backs up our intuition---token counts really do predict which prompting strategies will succeed, which makes sense since message complexity matters.
+
+\subsection{Optimization Algorithm Performance}
+\label{subsec:discussion_optimization}
+
+NSGA-II came out on top with IGD = 0.0003, which matches what the literature says about it being solid for multi-objective problems~\citep{deb2002nsga2}. Why'd it do so well?
+
+\textbf{It keeps solutions diverse.} NSGA-II's crowding distance mechanism stops the population from converging too early. You can see this in the results---47 solutions with decent spread ($\Delta = 0.412$).
+
+\textbf{Elitism helps.} The non-dominated sorting keeps the best solutions around across generations, pushing toward the Pareto front. That near-zero IGD score shows it really did converge well.
+
+\textbf{The problem suits it.} This schedule optimization problem has a fairly smooth objective space---tweak an assignment a bit and the objectives change a bit. Evolutionary algorithms handle that kind of problem nicely.
+
+SPEA2 did pretty well too ($IGD = 0.0018$, $M_n = 31$), just not quite as well as NSGA-II. It looks like the archive-based approach converged to part of the Pareto front rather than all of it. That's not necessarily bad---SPEA2 tends to give you fewer solutions but better quality, which might actually be what you want in practice.
+
+Random Search actually didn't suck ($IGD = 0.0142$). The problem space has enough decent solutions that even random sampling works okay. But those big gaps in the Pareto front ($\Delta = 0.683$) show why guided search matters.
+
+\subsection{Cost-Accuracy Trade-off Analysis}
+\label{subsec:discussion_tradeoffs}
+
+The results show we can save a lot of money without losing much accuracy. Getting 60\% cost reduction for just 1.6\% accuracy drop is a really good trade-off for most production scenarios.
+
+Why does this work? Pretty straightforward when you think about it:
+\begin{enumerate}
+    \item Log entries aren't all equally hard to classify
+    \item Easy ones (obvious normal patterns or clear errors) don't need fancy prompting
+    \item Only the complex or ambiguous entries actually benefit from detailed few-shot examples
+    \item The optimization figures out which logs are tough and gives those the expensive strategies
+\end{enumerate}
+
+Figure~\ref{fig:strategy_distribution} shows how the optimizer assigns strategies across different tasks.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/fig5_1_strategy_distribution.png}
+    \caption{How prompting strategies get distributed in an optimized solution---expensive strategies go to the complex logs}
+    \label{fig:strategy_distribution}
+\end{figure}
+
+\section{Current Challenges}
+\label{sec:discussion_challenges}
+
+\subsection{LLM Response Caching}
+\label{subsec:discussion_caching}
+
+The biggest problem right now is finishing the LLM response cache. We've only got 584 out of 20,000 entries cached (2.9\%), which leaves a ton of work. This causes issues:
+
+\textbf{Predictor training is limited.} The predictor only sees a small slice of all possible (task, strategy) combinations, so it might not generalize well.
+
+\textbf{We can't fully validate things.} Without the complete cache, we're relying on predictor estimates for uncached entries instead of real LLM responses. That's not ideal for experiments.
+
+\textbf{It takes time.} Generating the remaining 19,416 entries at 0.5-2 seconds each means 3-11 hours of compute time. It's doable but needs dedicated execution.
+
+\subsection{Model Accuracy Improvement}
+\label{subsec:discussion_accuracy}
+
+79\% predictor accuracy means there's a 21\% gap to close. Some things we could try:
+
+\textbf{Tune the hyperparameters better.} Running grid search or Bayesian optimization over XGBoost settings (tree count, depth, learning rate, regularization) might help.
+
+\textbf{Engineer better features.} Adding features that capture semantic meaning, structural patterns, or temporal relationships could boost prediction.
+
+\textbf{Try other models.} Ensemble methods (mix XGBoost with Random Forest or Neural Networks) or deep learning (LSTM for log sequences) are worth testing.
+
+\textbf{Augment the data.} Creating synthetic examples or using techniques to handle class imbalance better might improve minority class performance.
+
+\subsection{Computational Cost}
+\label{subsec:discussion_cost}
+
+Optimization runs pretty fast (45-52 seconds), but multiple runs for statistical validity add up. And if we scale to 100,000+ log entries, optimization time could become a problem. We could handle this with parallel evaluation (the problem is embarrassingly parallel) or warm-start techniques.
+
+\section{Limitations}
+\label{sec:discussion_limitations}
+
+What's missing? (1) We've only tested on HDFS---need more datasets. (2) Schedules are static, no dynamic adjustment. (3) Prompting strategies are hand-designed. (4) Only using one LLM (Gemma3). We should do multi-dataset validation and look into online learning eventually.
+
+\section{Progress Evaluation}
+\label{sec:discussion_progress}
+
+Checking against our objectives: (1) Cost-accuracy trade-offs---\textit{done}. (2) ML predictor---\textit{partly done} (79\% vs our 85\%+ goal). (3) Multi-objective optimization---\textit{done}. (4) Real dataset testing---\textit{partly done} (just one dataset). (5) Feasibility proof---\textit{done} (60\% savings demonstrated). Overall, we're about 65\% complete.

@@ -1,0 +1,44 @@
+\chapter{System Architecture}
+\label{app:architecture}
+
+This appendix provides an overview of the system architecture and key components.
+
+\section{Complete System Architecture}
+\label{app:architecture_diagram}
+
+Figure~\ref{fig:app_full_architecture} shows the complete system architecture with all components and their interactions.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/figA_1_full_system_architecture.png}
+    \caption{Complete system architecture showing data flow from input logs through optimization to final visualizations}
+    \label{fig:app_full_architecture}
+\end{figure}
+
+\section{Key Components}
+\label{app:components}
+
+\textbf{Data Loader} (\texttt{jobs/loader.py}): Parses HDFS logs and extracts features (token count, unique tokens, error presence).
+
+\textbf{Prompt Builder} (\texttt{prompts/}): Generates 4 prompting strategies with costs: 10, 25, 50, 90 tokens.
+
+\textbf{LLM Client} (\texttt{llm/gemini\_client.py}): Interfaces with Ollama API using MD5-based file caching for responses.
+
+\textbf{ML Predictor} (\texttt{predictors/mlbp.py}): XGBoost classifier (400 trees, depth 8) predicting strategy success.
+
+\textbf{Optimizers} (\texttt{optimizers/}): NSGA-II, SPEA2, Random Search implementations for finding Pareto-optimal schedules.
+
+\textbf{Evaluation} (\texttt{evaluation/}): Computes IGD, Delta, and solution count metrics.
+
+\textbf{Visualization} (\texttt{visualization/plots.py}): Generates Pareto front plots and comparison charts.
+
+\section{Configuration}
+\label{app:config}
+
+\textbf{Dataset}: 5,000 HDFS logs (80\%/20\% train/test split)
+
+\textbf{NSGA-II}: Population 100, 50 generations, tournament selection
+
+\textbf{SPEA2}: Archive size 100, density estimation
+
+\textbf{Random Search}: 1,000 iterations

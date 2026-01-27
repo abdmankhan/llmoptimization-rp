@@ -1,0 +1,38 @@
+\chapter{Conclusions and Future Work}
+\label{ch:conclusion}
+
+Let's wrap up what we've accomplished so far, what still needs doing before end-term, and where this research could go beyond this project.
+
+\section{Summary of Achievements}
+\label{sec:conclusion_summary}
+
+This project is about making LLM usage smarter through schedule optimization---basically figuring out how to balance accuracy against cost. Here's what we've got working at mid-term:
+
+\textbf{The whole pipeline is running.} We built a complete system that loads data, extracts features, predicts with ML, optimizes with multiple algorithms, and evaluates everything. It's all tested and functional.
+
+\textbf{The predictor works.} Our XGBoost model hits 79\% accuracy at guessing which prompting strategies will succeed. That proves log characteristics actually contain useful signals for prediction.
+
+\textbf{Optimization is solid.} We implemented three algorithms (Random Search, NSGA-II, SPEA2) and compared them. NSGA-II won with impressive numbers---IGD = 0.0003, 47 solutions, good spread.
+
+\textbf{Cost savings are real.} The optimized solutions hit 89.7\% accuracy (that's 98.3\% of max performance) while only using 40\% of the token cost. So yeah, 60\% cost reduction for basically no accuracy hit.
+
+\textbf{It works on real data.} We ran experiments on 5,000 HDFS log entries, compared against four baseline strategies, and the intelligent assignment approach clearly beats them.
+
+All of this proves the concept works and gives us a solid base to finish the project.
+
+\section{Remaining Work for End-Term}
+\label{sec:conclusion_remaining}
+
+\textbf{High priority stuff:} (1) Finish the LLM cache---19,416 entries left, probably 5-10 hours of compute time. (2) Get predictor accuracy up to 85\%+---needs hyperparameter tuning and better features. (3) Test on at least 2 more datasets like BGL or Android logs.
+
+\textbf{Medium priority:} Run 10+ trials per algorithm for proper statistical validation. Do ablation studies on features and parameters. Sensitivity analysis to see what matters most.
+
+\section{Future Directions}
+\label{sec:conclusion_future}
+
+Beyond this project, there's a bunch of interesting directions we could explore: automated prompt engineering (let the system design prompts), transfer learning (apply what we learn on one dataset to others), reinforcement learning for online adaptation (adjust in real-time), multi-model optimization (pick both strategy and which LLM to use), uncertainty-aware optimization (account for prediction confidence), and production deployment studies (how does this work in the real world?).
+
+\section{Final Remarks}
+\label{sec:conclusion_remarks}
+
+Bottom line: this mid-term work shows you can cut LLM costs by 60\% while keeping 98.3\% of max accuracy through intelligent schedule optimization. The pipeline is working, NSGA-II is giving us great Pareto fronts (IGD=0.0003), and the approach makes sense. What's left is finishing the cache, bumping up predictor accuracy, and testing on more datasets. If we pull this off, it could make LLM solutions actually affordable for organizations that can't justify current costs.

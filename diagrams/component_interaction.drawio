@@ -1,0 +1,142 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.0 Chrome/140.0.7339.249 Electron/38.7.2 Safari/537.36" version="29.3.0">
+  <diagram name="Component Interaction" id="component-interaction">
+    <mxGraphModel dx="946" dy="710" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" background="none" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=20;fontStyle=1;fontColor=#000000;labelBackgroundColor=#FFFFFF;" value="Component Interaction Diagram" vertex="1">
+          <mxGeometry height="40" width="600" x="310" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="data-layer-bg" parent="1" style="rounded=1;html=1;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontColor=#000000;" value="" vertex="1">
+          <mxGeometry height="150" width="1240" x="80" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="data-layer-title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;rounded=0;fontSize=14;fontStyle=1;fontColor=#000000;" value="DATA LAYER" vertex="1">
+          <mxGeometry height="30" width="200" x="90" y="105" as="geometry" />
+        </mxCell>
+        <mxCell id="hdfs-data" parent="1" style="rounded=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#000000;" value="HDFS Logs&#xa;+ Labels&#xa;&#xa;10,000 logs&#xa;~16 datasets" vertex="1">
+          <mxGeometry height="80" width="140" x="120" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="loader" parent="1" style="rounded=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#000000;" value="jobs/loader.py&#xa;&#xa;• Parse logs&#xa;• Extract features&#xa;• Create Job objects" vertex="1">
+          <mxGeometry height="80" width="160" x="300" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="prompts" parent="1" style="rounded=1;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#000000;" value="prompts/&#xa;templates.py&#xa;&#xa;4 prompt types&#xa;10-90 tokens" vertex="1">
+          <mxGeometry height="80" width="140" x="500" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="ollama" parent="1" style="rounded=1;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" value="Ollama API&#xa;(Local LLM)&#xa;&#xa;gemma3 model&#xa;Cached calls" vertex="1">
+          <mxGeometry height="80" width="140" x="680" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="cache" parent="1" style="rounded=1;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#000000;" value="Cache&#xa;results/ollama_cache/&#xa;&#xa;JSON storage&#xa;~2000 files" vertex="1">
+          <mxGeometry height="80" width="160" x="860" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="train-layer-bg" parent="1" style="rounded=1;html=1;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontColor=#000000;" value="" vertex="1">
+          <mxGeometry height="180" width="1240" x="80" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="train-layer-title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;rounded=0;fontSize=14;fontStyle=1;fontColor=#000000;" value="TRAINING LAYER" vertex="1">
+          <mxGeometry height="30" width="200" x="90" y="295" as="geometry" />
+        </mxCell>
+        <mxCell id="create-data" parent="1" style="rounded=1;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#000000;" value="predictors/mlbp.py&#xa;create_training_data()&#xa;&#xa;Input: Jobs × Prompts&#xa;Output: X, y&#xa;&#xa;X: [7 features]&#xa;y: [success/failure]" vertex="1">
+          <mxGeometry height="110" width="200" x="120" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="real-llm-box" parent="1" style="rounded=1;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;fontStyle=1;fontColor=#000000;" value="5% Real LLM" vertex="1">
+          <mxGeometry height="40" width="120" x="350" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="heuristic-box" parent="1" style="rounded=1;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;fontStyle=1;fontColor=#000000;" value="95% Heuristic" vertex="1">
+          <mxGeometry height="40" width="120" x="350" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="train-model" parent="1" style="rounded=1;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#000000;" value="train_predictor()&#xa;&#xa;XGBoost:&#xa;• 400 estimators&#xa;• depth=8&#xa;• lr=0.05&#xa;&#xa;Accuracy: 79%" vertex="1">
+          <mxGeometry height="110" width="160" x="520" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="predict-probs" parent="1" style="rounded=1;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#000000;" value="predict_probabilities()&#xa;&#xa;Input: model, jobs, prompts&#xa;&#xa;Output:&#xa;P(success | job, prompt)&#xa;Matrix [5000 × 4]" vertex="1">
+          <mxGeometry height="110" width="200" x="720" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="eval-layer-bg" parent="1" style="rounded=1;html=1;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontColor=#000000;" value="" vertex="1">
+          <mxGeometry height="220" width="1240" x="80" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="eval-layer-title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;rounded=0;fontSize=14;fontStyle=1;fontColor=#000000;" value="OPTIMIZATION AND EVALUATION LAYER" vertex="1">
+          <mxGeometry height="30" width="300" x="90" y="515" as="geometry" />
+        </mxCell>
+        <mxCell id="baseline" parent="1" style="rounded=1;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#000000;" value="Baseline Evaluation&#xa;&#xa;Single prompt for ALL&#xa;&#xa;• simple: 75.1%&#xa;• standard: 77.7%&#xa;• fewshot_1: 79.0%&#xa;• fewshot_3: 84.1%" vertex="1">
+          <mxGeometry height="150" width="180" x="120" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="random-search" parent="1" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#000000;" value="Random Search&#xa;&#xa;1000 iterations&#xa;Random assignments&#xa;&#xa;~20 solutions&#xa;IGD: 0.097" vertex="1">
+          <mxGeometry height="150" width="150" x="340" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="nsga2" parent="1" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontColor=#000000;" value="NSGA-II&#xa;&#xa;Pop: 100&#xa;Gen: 50&#xa;&#xa;~40 solutions&#xa;IGD: 0.0000 ✓&#xa;&#xa;BEST!" vertex="1">
+          <mxGeometry height="150" width="150" x="530" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="spea2" parent="1" style="rounded=1;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#000000;" value="SPEA2&#xa;&#xa;Archive-based&#xa;Fitness sharing&#xa;&#xa;~12 solutions&#xa;IGD: 0.231" vertex="1">
+          <mxGeometry height="150" width="150" x="720" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="pareto" parent="1" style="rounded=1;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#000000;" value="Pareto Front&#xa;Extraction&#xa;&#xa;Filter dominated&#xa;solutions&#xa;&#xa;Keep optimal" vertex="1">
+          <mxGeometry height="150" width="140" x="910" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="metrics" parent="1" style="rounded=1;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#000000;" value="Metrics&#xa;&#xa;• IGD&#xa;• Δ&#xa;• Mₙ" vertex="1">
+          <mxGeometry height="80" width="120" x="1090" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="viz" parent="1" style="rounded=1;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#000000;" value="Visualization&#xa;&#xa;• Plot&#xa;• CSV" vertex="1">
+          <mxGeometry height="50" width="120" x="1090" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="output-layer-bg" parent="1" style="rounded=1;html=1;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontColor=#000000;" value="" vertex="1">
+          <mxGeometry height="100" width="1240" x="80" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="output-layer-title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;rounded=0;fontSize=14;fontStyle=1;fontColor=#000000;" value="OUTPUT LAYER" vertex="1">
+          <mxGeometry height="30" width="200" x="90" y="775" as="geometry" />
+        </mxCell>
+        <mxCell id="output1" parent="1" style="rounded=1;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#000000;" value="tables/&#xa;baseline_results.csv" vertex="1">
+          <mxGeometry height="40" width="200" x="120" y="815" as="geometry" />
+        </mxCell>
+        <mxCell id="output2" parent="1" style="rounded=1;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#000000;" value="tables/&#xa;table3_optimizer_comparison.csv" vertex="1">
+          <mxGeometry height="40" width="260" x="360" y="815" as="geometry" />
+        </mxCell>
+        <mxCell id="output3" parent="1" style="rounded=1;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#000000;" value="figures/&#xa;pareto_with_baselines.png" vertex="1">
+          <mxGeometry height="40" width="240" x="660" y="815" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-data-train" edge="1" parent="1" source="loader" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=3;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#000000;" target="create-data" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-prompts-train" edge="1" parent="1" source="prompts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;fontColor=#000000;" target="create-data" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-ollama-train" edge="1" parent="1" source="ollama" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" target="real-llm-box" value="Real calls">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-train-predict" edge="1" parent="1" source="create-data" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeWidth=3;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#000000;" target="train-model" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-model-predict" edge="1" parent="1" source="train-model" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeWidth=3;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#000000;" target="predict-probs" value="Trained&#xa;Model">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-probs-baseline" edge="1" parent="1" source="predict-probs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fillColor=#e1d5e7;strokeColor=#9673a6;dashed=1;fontColor=#000000;" target="baseline" value="P matrix">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-probs-opt1" edge="1" parent="1" source="predict-probs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#000000;" target="random-search" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-probs-opt2" edge="1" parent="1" source="predict-probs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#000000;" target="nsga2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-probs-opt3" edge="1" parent="1" source="predict-probs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#000000;" target="spea2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-opt-pareto" edge="1" parent="1" source="spea2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#000000;" target="pareto" value="Solutions">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-pareto-metrics" edge="1" parent="1" source="pareto" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.3;entryX=0;entryY=0.5;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#000000;" target="metrics" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-pareto-viz" edge="1" parent="1" source="pareto" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.7;entryX=0;entryY=0.5;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#000000;" target="viz" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-output1" edge="1" parent="1" source="baseline" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.2;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;fillColor=#e1d5e7;strokeColor=#9673a6;dashed=1;fontColor=#000000;" target="output1" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-output2" edge="1" parent="1" source="metrics" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;dashed=1;fontColor=#000000;" target="output2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-output3" edge="1" parent="1" source="viz" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;dashed=1;fontColor=#000000;" target="output3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

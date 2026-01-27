@@ -1,0 +1,40 @@
+%Abstract chapter for LLM Optimization Project
+\chapter*{\center \Large  Abstract}
+
+Large Language Models (LLMs) have demonstrated remarkable capabilities in various natural language processing tasks, including log analysis and anomaly detection. However, their deployment in production systems faces a critical challenge: the trade-off between prediction accuracy and computational cost. Different LLM prompting strategies (ranging from simple instructions to few-shot examples) yield varying levels of accuracy at different token costs. This project explores an approach to optimize LLM utilization through intelligent schedule optimization, where different prompting strategies are dynamically assigned to different tasks based on predicted success rates. 
+
+We implement a machine learning-based predictor combined with multi-objective optimization algorithms to find optimal cost-accuracy trade-offs. The mid-term implementation includes a feature extraction pipeline, an XGBoost-based prediction framework achieving approximately 79\% accuracy, and three optimization algorithms (NSGA-II, SPEA2, and Random Search). Preliminary experiments on the HDFS log dataset with 5,000 log entries show that NSGA-II produces superior Pareto fronts with IGD scores approaching zero. Early results suggest that intelligent assignment strategies can achieve accuracy levels close to the most expensive baseline while significantly reducing overall token usage, demonstrating the viability of the approach. The current work represents approximately 60\% completion, with ongoing efforts focused on improving predictor accuracy, completing LLM response caching, and validating the approach on additional datasets.
+
+%%%
+~\\[1cm]
+\noindent\textbf{Keywords:} Large Language Models, Multi-Objective Optimization, Schedule Optimization, Cost-Accuracy Trade-off, Log Analysis
+
+\vfill
+\noindent
+\textbf{Report's total word count:} Approximately 8,000 words (mid-term submission)
+
+\noindent
+\textbf{Source code repository:} \url{https://github.com/[USERNAME]/llmoptimization} (placeholder)
+
+\noindent
+\textbf{Note:} This is a mid-term progress report for the Minor Project course. The complete implementation and final results will be presented in the end-term submission. It also has some useful examples to use \LaTeX. Do read this template carefully. The number of chapters and their titles may vary depending on the type of project and personal preference. Section titles in this template are illustrative should be updated accordingly. For example, sections named ``A section...'' and ``Example of ...'' should be updated. The number of sections in each chapter may also vary. This template may or may not suit your project. Discuss the structure of your report with your supervisor.
+
+%%%
+~\\[1cm]%REMOVE THIS
+\noindent\textbf{Guidance on abstract writing:} An abstract is a summary of a report in a single paragraph up to a maximum of 250 words. An abstract should be self-contained, and it should not refer to sections, figures, tables, equations, or references. An abstract typically consists of sentences describing the following four parts: (1) introduction (background and purpose of the project), (2) methods, (3) results and analysis, and (4) conclusions. The distribution of these four parts of the abstract should reflect the relative proportion of these parts in the report itself. An abstract starts with a few sentences describing the project's general field, comprehensive background and context, the main purpose of the project; and the problem statement. A few sentences describe the methods, experiments, and implementation of the project. A few sentences describe the main results achieved and their significance. The final part of the abstract describes the conclusions and the implications of the results to the relevant field.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%s
+~\\[1cm]
+\noindent % Provide your key words
+\textbf{Keywords:} a maximum of five keywords/keyphrase separated by commas
+
+\vfill
+\noindent
+\textbf{Report's total word count: Following the abstract, the word count must be stated.} We expect at least 10,000 words in length and at most 15,000 words (starting from Chapter 1 and finishing at the end of the conclusions chapter, excluding references, appendices, abstract, text in figures, tables, listings, and captions), about 40 - 50 pages. \newline
+\newline
+\noindent
+\textbf{Program code should be uploaded to gitlab, and the gitlab link should be included alongside the word count, following the abstract.} \newline
+\newline
+You must submit your dissertation report (preferred in a PDF file) via the “Turnitin assignment” in Blackboard Learn by the deadline. If a student has resits from the taught modules, the dissertation deadline will be extended for 3 weeks from the original dissertation deadline.
+

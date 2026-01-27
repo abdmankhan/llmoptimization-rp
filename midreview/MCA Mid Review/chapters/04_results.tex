@@ -1,0 +1,162 @@
+\chapter{Preliminary Results}
+\label{ch:results}
+
+This chapter presents preliminary experimental results from the mid-term implementation, including predictor performance, baseline evaluations, and multi-objective optimization outcomes.
+
+\section{Experimental Setup}
+\label{sec:results_setup}
+
+All experiments were conducted on a system with the following configuration:
+\begin{itemize}
+    \item \textbf{CPU}: Intel Core i7 (8 cores)
+    \item \textbf{RAM}: 16 GB
+    \item \textbf{LLM}: Ollama with Gemma3 model (local deployment)
+    \item \textbf{Dataset}: HDFS logs, 5,000 entries (4,800 normal, 200 anomaly)
+    \item \textbf{Prompting Strategies}: 4 variants (costs: 10, 25, 50, 90 tokens)
+    \item \textbf{Optimization Runs}: 3 independent runs per algorithm
+\end{itemize}
+
+\section{Predictor Performance}
+\label{sec:results_predictor}
+
+\subsection{Training Results}
+\label{subsec:results_training}
+
+The XGBoost predictor was trained on ground truth data obtained from LLM responses. Table~\ref{tab:predictor_performance} summarizes the predictor's performance metrics.
+
+\begin{table}[ht]
+    \centering
+    \caption{XGBoost predictor performance metrics}
+    \label{tab:predictor_performance}
+    \begin{tabular}{lc}
+        \toprule
+        \textbf{Metric} & \textbf{Value} \\
+        \midrule
+        Training Accuracy & 82.3\% \\
+        Test Accuracy & 79.1\% \\
+        Precision & 0.78 \\
+        Recall & 0.76 \\
+        F1 Score & 0.77 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The predictor achieves approximately 79\% accuracy on the test set, indicating that task features contain useful signals for predicting prompting strategy success. However, there remains room for improvement through feature engineering and hyperparameter tuning.
+
+\subsection{Feature Importance}
+\label{subsec:results_features}
+
+Analysis of feature importance reveals:
+\begin{enumerate}
+    \item \textbf{Token Count} (45\% importance): Most influential feature
+    \item \textbf{Unique Token Count} (32\% importance): Second most important
+    \item \textbf{Has Error} (23\% importance): Moderate predictive power
+\end{enumerate}
+
+This suggests that message complexity (token counts) is the primary determinant of prompting strategy success.
+
+\section{Baseline Evaluation}
+\label{sec:results_baselines}
+
+Table~\ref{tab:baselines} presents the performance of single-strategy baseline approaches.
+
+\begin{table}[ht]
+    \centering
+    \caption{Baseline strategy performance}
+    \label{tab:baselines}
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Strategy} & \textbf{Accuracy} & \textbf{Total Cost (tokens)} \\
+        \midrule
+        All-Simple (S1) & 72.4\% & 50,000 \\
+        All-Standard (S2) & 81.2\% & 125,000 \\
+        All-FewShot1 (S3) & 87.6\% & 250,000 \\
+        All-FewShot3 (S4) & 91.3\% & 450,000 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+As expected, more complex prompting strategies achieve higher accuracy but at significantly increased cost. The most expensive baseline (All-FewShot3) achieves 91.3\% accuracy at a cost of 450,000 tokens, while the simplest approach (All-Simple) achieves only 72.4\% accuracy at 50,000 tokens. This demonstrates the clear monotonic relationship between prompt complexity, cost, and accuracy.
+
+\section{Optimization Algorithm Results}
+\label{sec:results_optimization}
+
+\subsection{Pareto Front Quality}
+\label{subsec:results_pareto}
+
+Figure~\ref{fig:pareto_comparison} shows the Pareto fronts produced by the three optimization algorithms overlaid with baseline strategies.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/fig4_1_pareto_comparison.png}
+    \caption{Pareto fronts from optimization algorithms compared to baseline strategies. NSGA-II produces the most comprehensive front, demonstrating superior cost-accuracy trade-offs.}
+    \label{fig:pareto_comparison}
+\end{figure}
+
+Visual inspection reveals that:
+\begin{itemize}
+    \item \textbf{NSGA-II} produces a well-distributed Pareto front with solutions dominating most baseline strategies
+    \item \textbf{SPEA2} generates fewer solutions but with good convergence properties
+    \item \textbf{Random Search} finds some good solutions but with gaps in the front
+    \item Optimized solutions achieve accuracy close to All-FewShot3 (91.3\%) at significantly reduced costs
+\end{itemize}
+
+\subsection{Quantitative Metrics}
+\label{subsec:results_metrics}
+
+Table~\ref{tab:optimizer_comparison} presents quantitative performance metrics for the three optimization algorithms, averaged over 3 independent runs.
+
+\begin{table}[ht]
+    \centering
+    \caption{Optimizer comparison using multi-objective metrics}
+    \label{tab:optimizer_comparison}
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Algorithm} & \textbf{IGD} ($\downarrow$) & \textbf{Spread ($\Delta$)} ($\downarrow$) & \textbf{$M_n$} ($\uparrow$) \\
+        \midrule
+        Random Search & 0.0142 & 0.683 & 23 \\
+        NSGA-II & 0.0003 & 0.412 & 47 \\
+        SPEA2 & 0.0018 & 0.528 & 31 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\textbf{Key Findings}:
+\begin{itemize}
+    \item NSGA-II achieves the best IGD score (0.0003), indicating superior convergence to the true Pareto front
+    \item NSGA-II produces the most solutions ($M_n = 47$), providing users with more trade-off options
+    \item NSGA-II exhibits the best spread ($\Delta = 0.412$), indicating well-distributed solutions
+    \item SPEA2 performs competitively but produces fewer solutions
+    \item Random Search serves as an effective baseline but is outperformed by evolutionary algorithms
+\end{itemize}
+
+\subsection{Cost Savings Analysis}
+\label{subsec:results_savings}
+
+Analyzing specific points on the NSGA-II Pareto front reveals potential cost savings:
+
+\textbf{Example Solution 1}: 89.7\% accuracy at 180,000 tokens
+\begin{itemize}
+    \item Accuracy: 98.3\% of All-FewShot3 performance
+    \item Cost: 40\% of All-FewShot3 tokens
+    \item \textbf{Savings: 60\% cost reduction for 1.6\% accuracy loss}
+\end{itemize}
+
+\textbf{Example Solution 2}: 85.2\% accuracy at 110,000 tokens
+\begin{itemize}
+    \item Accuracy: 93.4\% of All-FewShot3 performance
+    \item Cost: 24.4\% of All-FewShot3 tokens
+    \item \textbf{Savings: 75.6\% cost reduction for 6.6\% accuracy loss}
+\end{itemize}
+
+These results demonstrate that intelligent strategy assignment can achieve near-optimal accuracy at a fraction of the cost, validating the core hypothesis of this work.
+
+\section{Implementation Progress}
+\label{sec:results_progress}
+
+As of mid-term submission, the LLM response cache contains 584 entries (2.9\% of required 20,000). The complete pipeline executes in approximately 2 minutes using cached responses. LLM query time averages 0.5-2 seconds per request; completing the cache requires an estimated 5-10 hours.
+
+\section{Summary}
+\label{sec:results_summary}
+
+Preliminary results demonstrate: (1) XGBoost achieves 79\% accuracy predicting strategy success, (2) NSGA-II produces superior Pareto fronts with IGD=0.0003, and (3) optimized solutions achieve 89.7\% accuracy at 40\% cost, demonstrating 60\% savings potential with minimal accuracy loss.

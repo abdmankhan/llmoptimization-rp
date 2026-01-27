@@ -1,0 +1,294 @@
+\chapter{Methodology}
+\label{ch:method}
+
+This chapter describes the methodology employed to optimize LLM utilization through schedule optimization, including system architecture, data processing, prediction framework, and optimization algorithms.
+
+\section{System Overview}
+\label{sec:method_overview}
+
+Figure~\ref{fig:system_architecture} illustrates the overall system architecture. The workflow consists of six main stages:
+
+\begin{enumerate}
+    \item \textbf{Data Loading}: Parse log files and extract structured information
+    \item \textbf{Feature Extraction}: Compute task characteristics (token counts, patterns)
+    \item \textbf{ML Prediction}: Train predictor and generate probability matrix
+    \item \textbf{Baseline Evaluation}: Compute single-strategy baseline performance
+    \item \textbf{Multi-Objective Optimization}: Find optimal strategy assignments
+    \item \textbf{Evaluation \& Visualization}: Compare algorithms and generate plots
+\end{enumerate}
+
+\begin{figure}[ht]
+    \centering
+    \fbox{\textit{[PLACEHOLDER: System architecture diagram showing data flow]}}
+    % TODO: Add main_flow.drawio.png or create new architecture diagram
+    \caption{System architecture showing the complete pipeline from data loading to result visualization}
+    \label{fig:system_architecture}
+\end{figure}
+
+\section{Data Preprocessing}
+\label{sec:method_data}
+
+\subsection{Dataset Description}
+\label{subsec:method_dataset}
+
+We utilize the HDFS (Hadoop Distributed File System) log dataset~\citep{hdfs2009}, which contains logs from a production Hadoop cluster. Each log entry consists of:
+
+\begin{itemize}
+    \item \textbf{Timestamp}: Date and time of log generation
+    \item \textbf{Thread ID}: Identifies the process generating the log
+    \item \textbf{Severity Level}: INFO, WARN, ERROR, etc.
+    \item \textbf{Component}: System component responsible for the message
+    \item \textbf{Message}: Freeform text describing the event
+\end{itemize}
+
+The dataset includes binary labels (0: normal, 1: anomaly) based on expert annotation. Our experiments use 5,000 log entries with approximately 96\% normal and 4\% anomaly instances.
+
+\subsection{Feature Extraction}
+\label{subsec:method_features}
+
+For each log entry, we extract three key features that serve as input to the ML predictor:
+
+\begin{enumerate}
+    \item \textbf{Token Count}: Total number of tokens in the log message, computed using standard tokenization
+    \item \textbf{Unique Token Count}: Number of distinct tokens, indicating message complexity
+    \item \textbf{Has Error}: Binary indicator of whether the log message contains error-related keywords
+\end{enumerate}
+
+These features capture task characteristics hypothesized to correlate with LLM performance for different prompting strategies.
+
+\section{Prompting Strategies}
+\label{sec:method_prompts}
+
+We define four prompting strategies with varying complexity and cost:
+
+\textbf{Strategy 1: Simple} (Cost: 10 tokens)
+\begin{quote}
+``Classify this log entry as normal or anomaly.''
+\end{quote}
+
+\textbf{Strategy 2: Standard} (Cost: 25 tokens)
+\begin{quote}
+``Analyze the following HDFS log entry and determine whether it represents normal system operation or an anomaly. Consider the log level, component, and message content. Respond with either 'normal' or 'anomaly'.''
+\end{quote}
+
+\textbf{Strategy 3: Few-Shot (1 example)} (Cost: 50 tokens)
+\begin{quote}
+``Given example logs with labels, classify new entries. Example: [sample normal log] $\rightarrow$ normal. Now classify: [target log].''
+\end{quote}
+
+\textbf{Strategy 4: Few-Shot (3 examples)} (Cost: 90 tokens)
+\begin{quote}
+``Given multiple example logs with labels (normal/anomaly), identify patterns and classify new entries following the same reasoning.''
+\end{quote}
+
+Figure~\ref{fig:prompt_comparison} compares token costs and expected accuracy ranges for each strategy.
+
+\begin{figure}[ht]
+    \centering
+    \fbox{\textit{[PLACEHOLDER: Bar chart showing prompt costs vs. accuracy]}}
+    % TODO: Create visualization of prompting strategy trade-offs
+    \caption{Comparison of prompting strategies showing token costs and accuracy ranges}
+    \label{fig:prompt_comparison}
+\end{figure}
+
+\section{ML-Based Prediction}
+\label{sec:method_mlbp}
+
+\subsection{Predictor Architecture}
+\label{subsec:method_predictor}
+
+We implement an XGBoost-based classifier~\citep{chen2016xgboost} that predicts the probability of success for each (task, strategy) pair. The predictor is trained on features extracted from log entries and ground truth labels from LLM responses.
+
+\textbf{Model Configuration}:
+\begin{itemize}
+    \item Number of estimators: 400 trees
+    \item Maximum depth: 8
+    \item Learning rate: 0.05
+    \item Regularization: L1 and L2 penalties enabled
+\end{itemize}
+
+\subsection{Training Data Generation}
+\label{subsec:method_training}
+
+Training data is generated by:
+\begin{enumerate}
+    \item Querying the LLM with each (log entry, prompting strategy) combination
+    \item Recording whether the LLM response matches the ground truth label
+    \item Caching responses to avoid redundant API calls
+\end{enumerate}
+
+For 5,000 log entries and 4 prompting strategies, this requires 20,000 LLM queries. A file-based caching mechanism stores results as JSON files indexed by MD5 hash of (entry, strategy) pairs.
+
+\subsection{Probability Matrix Generation}
+\label{subsec:method_probmatrix}
+
+Once trained, the predictor generates a $5000 \times 4$ probability matrix $P$ where $P_{ij}$ represents the predicted probability that prompting strategy $j$ will correctly classify log entry $i$. This matrix serves as input to the optimization algorithms.
+
+\section{Multi-Objective Optimization}
+\label{sec:method_optimization}
+
+\subsection{Problem Formulation}
+\label{subsec:method_formulation}
+
+Given:
+\begin{itemize}
+    \item $N$ tasks (log entries)
+    \item $K$ prompting strategies with costs $c_1, c_2, \ldots, c_K$
+    \item Probability matrix $P \in [0,1]^{N \times K}$
+\end{itemize}
+
+Find assignment $x \in \{1,2,\ldots,K\}^N$ that optimizes:
+
+\textbf{Objective 1 (Maximize)}: Expected accuracy
+\begin{equation}
+    f_1(x) = \frac{1}{N} \sum_{i=1}^{N} P_{i,x_i}
+\end{equation}
+
+\textbf{Objective 2 (Minimize)}: Total token cost
+\begin{equation}
+    f_2(x) = \sum_{i=1}^{N} c_{x_i}
+\end{equation}
+
+The solution space contains $K^N$ possible assignments, making exhaustive search infeasible for non-trivial problem sizes.
+
+\subsection{Random Search}
+\label{subsec:method_random}
+
+Random search serves as a baseline optimization approach:
+\begin{enumerate}
+    \item Generate 1,000 random assignments
+    \item Evaluate both objectives for each assignment
+    \item Extract Pareto-optimal solutions
+\end{enumerate}
+
+While simple, random search provides a lower bound on algorithm performance and validates the optimization framework.
+
+\subsection{NSGA-II Implementation}
+\label{subsec:method_nsga2}
+
+Our NSGA-II implementation~\citep{deb2002nsga2} uses:
+
+\textbf{Representation}: Integer array of length $N$ where each element is in $\{1,2,\ldots,K\}$
+
+\textbf{Population}: 100 individuals
+
+\textbf{Generations}: 50
+
+\textbf{Selection}: Binary tournament selection based on rank and crowding distance
+
+\textbf{Crossover}: Single-point crossover with 90\% probability
+
+\textbf{Mutation}: Random strategy reassignment with 10\% probability per gene
+
+NSGA-II maintains population diversity through crowding distance calculation and produces well-distributed Pareto fronts.
+
+\subsection{SPEA2 Implementation}
+\label{subsec:method_spea2}
+
+Our SPEA2 implementation~\citep{zitzler2001spea2} employs:
+
+\textbf{Archive Size}: 100 non-dominated solutions
+
+\textbf{Population Size}: 100 individuals
+
+\textbf{Fitness Assignment}: Based on domination count and density estimation
+
+\textbf{Environmental Selection}: Combines archive and population, performs truncation
+
+SPEA2 typically produces fewer but higher-quality solutions compared to NSGA-II.
+
+\section{Evaluation Framework}
+\label{sec:method_evaluation}
+
+\subsection{Baseline Strategies}
+\label{subsec:method_baselines}
+
+We compare optimization algorithms against four single-strategy baselines:
+\begin{enumerate}
+    \item \textbf{All-Simple}: Assign strategy 1 to all tasks
+    \item \textbf{All-Standard}: Assign strategy 2 to all tasks
+    \item \textbf{All-FewShot1}: Assign strategy 3 to all tasks
+    \item \textbf{All-FewShot3}: Assign strategy 4 to all tasks
+\end{enumerate}
+
+These baselines represent the performance achievable without optimization.
+
+\subsection{Performance Metrics}
+\label{subsec:method_metrics}
+
+We evaluate using three multi-objective optimization metrics:
+
+\textbf{Inverted Generational Distance (IGD)}: Measures convergence to reference Pareto front
+\begin{equation}
+    IGD = \frac{1}{|R|} \sum_{r \in R} \min_{s \in S} d(r, s)
+\end{equation}
+where $R$ is the reference front, $S$ is the obtained front, and $d$ is Euclidean distance. Lower values indicate better performance.
+
+\textbf{Spread ($\Delta$)}: Measures diversity of solutions along the Pareto front
+\begin{equation}
+    \Delta = \frac{d_f + d_l + \sum_{i=1}^{N-1} |d_i - \bar{d}|}{d_f + d_l + (N-1)\bar{d}}
+\end{equation}
+where $d_f$ and $d_l$ are extreme distances, $d_i$ are consecutive distances, and $\bar{d}$ is mean distance. Lower values indicate better spread.
+
+\textbf{Solution Count ($M_n$)}: Number of Pareto-optimal solutions, indicating front richness.
+
+\subsection{Visualization}
+\label{subsec:method_visualization}
+
+Results are visualized through:
+\begin{itemize}
+    \item Pareto front plots showing cost vs. accuracy trade-offs
+    \item Comparison of optimization algorithms overlaid with baselines
+    \item Performance metric tables summarizing algorithm behavior
+\end{itemize}
+
+Figure~\ref{fig:pareto_example} shows an example Pareto front visualization.
+
+\begin{figure}[ht]
+    \centering
+    \fbox{\textit{[PLACEHOLDER: Pareto front plot with baselines]}}
+    % TODO: Include sample Pareto front plot from results
+    \caption{Example Pareto front showing optimization algorithm solutions compared to baseline strategies}
+    \label{fig:pareto_example}
+\end{figure}
+
+\section{Implementation Details}
+\label{sec:method_implementation}
+
+\subsection{Technology Stack}
+\label{subsec:method_tech}
+
+\begin{itemize}
+    \item \textbf{Language}: Python 3.14
+    \item \textbf{ML Libraries}: scikit-learn 1.3, XGBoost 2.0
+    \item \textbf{LLM Interface}: Ollama (local deployment with Gemma3 model)
+    \item \textbf{Visualization}: Matplotlib 3.7, NumPy 1.24
+    \item \textbf{Data Handling}: Pandas 2.0
+\end{itemize}
+
+\subsection{Caching Mechanism}
+\label{subsec:method_caching}
+
+To enable rapid experimentation without repeated LLM queries, we implement a file-based cache:
+
+\begin{enumerate}
+    \item Compute MD5 hash of (log entry, prompting strategy) pair
+    \item Check if cached response exists in \texttt{results/ollama\_cache/}
+    \item If cached, load JSON file; otherwise query LLM and cache result
+\end{enumerate}
+
+Cache files store only the final classification label (0 or 1), not the full LLM response, optimizing storage efficiency.
+
+\subsection{Code Organization}
+\label{subsec:method_code}
+
+\begin{itemize}
+    \item \texttt{jobs/loader.py}: Data loading and parsing
+    \item \texttt{prompts/}: Prompt template definitions
+    \item \texttt{llm/gemini\_client.py}: LLM interface with caching
+    \item \texttt{predictors/mlbp.py}: XGBoost predictor implementation
+    \item \texttt{optimizers/}: NSGA-II, SPEA2, Random Search implementations
+    \item \texttt{evaluation/}: Baseline computation, metrics, Pareto extraction
+    \item \texttt{visualization/plots.py}: Result visualization
+    \item \texttt{main.py}: Orchestration pipeline
+\end{itemize}

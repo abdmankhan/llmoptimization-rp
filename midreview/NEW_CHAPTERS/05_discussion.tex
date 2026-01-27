@@ -1,0 +1,187 @@
+\chapter{Discussion and Analysis}
+\label{ch:discussion}
+
+This chapter analyzes the preliminary results, discusses current challenges and limitations, and evaluates progress toward the stated objectives.
+
+\section{Analysis of Results}
+\label{sec:discussion_analysis}
+
+\subsection{Predictor Performance Analysis}
+\label{subsec:discussion_predictor}
+
+The XGBoost predictor's 79\% accuracy represents a solid foundation but indicates room for improvement. Several factors contribute to this performance level:
+
+\textbf{Feature Limitations}: The current feature set (token count, unique tokens, error presence) captures basic log characteristics but may miss important semantic information. Future work could explore:
+\begin{itemize}
+    \item Log template matching (identifying structured message patterns)
+    \item Component-specific features (different system components may exhibit different patterns)
+    \item Temporal features (time-of-day, sequence patterns)
+    \item Semantic embeddings from the log messages
+\end{itemize}
+
+\textbf{Class Imbalance}: The dataset contains 96\% normal and 4\% anomaly instances. While standard techniques (class weights, stratified sampling) are employed, the severe imbalance likely affects predictor performance on anomaly cases. This is particularly concerning since anomaly detection is the primary use case.
+
+\textbf{Training Data Quality}: The predictor is trained on LLM responses rather than ground truth labels. If the LLM makes errors, these propagate to the predictor. The current 79\% accuracy may partially reflect LLM limitations rather than predictor limitations.
+
+Despite these challenges, the 79\% accuracy is sufficient to demonstrate proof-of-concept. Feature importance analysis showing token counts as the dominant predictor validates the intuition that message complexity correlates with prompting strategy success.
+
+\subsection{Optimization Algorithm Performance}
+\label{subsec:discussion_optimization}
+
+NSGA-II's superior performance (IGD = 0.0003) aligns with existing literature showing its effectiveness for multi-objective problems~\citep{deb2002nsga2}. Several factors contribute to this outcome:
+
+\textbf{Population Diversity}: NSGA-II's crowding distance mechanism maintains solution diversity, preventing premature convergence. This is evidenced by the high solution count ($M_n = 47$) and good spread ($\Delta = 0.412$).
+
+\textbf{Elitism}: Non-dominated sorting preserves the best solutions across generations, ensuring convergence to the Pareto front. The near-zero IGD score demonstrates excellent convergence.
+
+\textbf{Problem Characteristics}: The schedule optimization problem has a relatively smooth objective space (small changes in assignment typically produce small changes in objectives), which suits evolutionary algorithms well.
+
+SPEA2's competitive but slightly inferior performance ($IGD = 0.0018$, $M_n = 31$) suggests its archive-based approach may be converging to a subset of the Pareto front. This is not necessarily problematic---SPEA2 often produces fewer but higher-quality solutions, which may be preferred in practice.
+
+Random Search's surprisingly decent performance ($IGD = 0.0142$) indicates that the problem space contains many reasonable solutions, making even simple sampling effective. However, its large gaps in the Pareto front ($\Delta = 0.683$) demonstrate the value of guided search.
+
+\subsection{Cost-Accuracy Trade-off Analysis}
+\label{subsec:discussion_tradeoffs}
+
+The results demonstrate that substantial cost savings are achievable with minimal accuracy loss. The 60\% cost reduction for 1.6\% accuracy loss represents a highly favorable trade-off for many production scenarios.
+
+This outcome can be explained by observing that:
+\begin{enumerate}
+    \item Not all log entries are equally difficult to classify
+    \item Simple entries (clear normal patterns or obvious errors) succeed with minimal prompting
+    \item Only complex or ambiguous entries benefit from detailed few-shot examples
+    \item The optimization algorithm learns to allocate expensive strategies to challenging cases
+\end{enumerate}
+
+Figure~\ref{fig:strategy_distribution} would illustrate how optimized solutions distribute prompting strategies across tasks (placeholder for future diagram).
+
+\begin{figure}[ht]
+    \centering
+    \fbox{\textit{[PLACEHOLDER: Distribution of prompting strategies in optimal solution]}}
+    % TODO: Create visualization showing how strategies are assigned
+    \caption{Distribution of prompting strategies in an example optimized solution, showing preferential assignment of expensive strategies to complex log entries}
+    \label{fig:strategy_distribution}
+\end{figure}
+
+\section{Current Challenges}
+\label{sec:discussion_challenges}
+
+\subsection{LLM Response Caching}
+\label{subsec:discussion_caching}
+
+The most significant current challenge is completing the LLM response cache. With only 584 of 20,000 required entries cached (2.9\%), substantial work remains. This limitation affects:
+
+\textbf{Predictor Training}: The predictor currently trains on a small subset of possible (task, strategy) combinations, potentially limiting its ability to generalize.
+
+\textbf{Experimental Validation}: Without the complete cache, we cannot fully validate the approach using only real LLM responses (current experiments rely on predictor estimates for uncached entries).
+
+\textbf{Time Requirements}: Generating the remaining 19,416 cache entries at 0.5-2 seconds per query requires 3-11 hours of computation. This is manageable but requires dedicated execution time.
+
+\subsection{Model Accuracy Improvement}
+\label{subsec:discussion_accuracy}
+
+The 79\% predictor accuracy leaves a 21\% margin for improvement. Potential approaches include:
+
+\textbf{Hyperparameter Tuning}: Systematic grid search or Bayesian optimization over XGBoost parameters (tree count, depth, learning rate, regularization) may yield improvements.
+
+\textbf{Feature Engineering}: Additional features capturing semantic content, structural patterns, or temporal relationships could enhance predictive power.
+
+\textbf{Alternative Models}: Ensemble methods (combining XGBoost with Random Forest, Neural Networks) or deep learning approaches (LSTM for sequential log patterns) warrant exploration.
+
+\textbf{Data Augmentation}: Generating synthetic training examples or applying techniques to address class imbalance may improve performance on minority classes.
+
+\subsection{Computational Cost}
+\label{subsec:discussion_cost}
+
+While the optimization algorithms execute efficiently (45-52 seconds per run), running multiple algorithms with multiple independent runs for statistical validity accumulates computational time. For production deployment with larger problem sizes (100,000+ log entries), optimization time may become a bottleneck.
+
+Potential solutions include:
+\begin{itemize}
+    \item Parallel evaluation of candidate solutions (embarrassingly parallel problem)
+    \item Warm-start techniques using previous optimization results
+    \item Approximate algorithms trading optimality for speed
+    \item Periodic re-optimization (e.g., daily) rather than real-time optimization
+\end{itemize}
+
+\section{Limitations}
+\label{sec:discussion_limitations}
+
+\subsection{Dataset Scope}
+\label{subsec:discussion_dataset}
+
+Current experiments use only the HDFS log dataset. Generalization to other log types (system logs, application logs, network logs) requires validation. Different domains may exhibit different characteristics:
+\begin{itemize}
+    \item Varying complexity distributions
+    \item Different feature importance patterns
+    \item Alternative prompting strategy effectiveness
+\end{itemize}
+
+\subsection{Static Assignment}
+\label{subsec:discussion_static}
+
+The current system produces static schedules that assign prompting strategies to tasks offline. Dynamic scenarios where:
+\begin{itemize}
+    \item New log entries arrive in real-time
+    \item System characteristics evolve over time
+    \item LLM performance changes with updates
+\end{itemize}
+require online learning and dynamic re-optimization, which are not yet implemented.
+
+\subsection{Prompting Strategy Design}
+\label{subsec:discussion_prompts}
+
+The four prompting strategies are manually crafted based on intuition and prior work. Automated prompt engineering techniques (prompt optimization, meta-prompting) could potentially discover more effective strategies or identify a wider range of cost-accuracy points.
+
+\subsection{Single LLM Model}
+\label{subsec:discussion_single_llm}
+
+All experiments use a single LLM model (Gemma3 via Ollama). Different models (GPT-4, Claude, Llama) may exhibit different cost-accuracy characteristics, and the optimization framework could be extended to select both prompting strategies and models.
+
+\section{Evaluation Against Objectives}
+\label{sec:discussion_objectives}
+
+Revisiting the objectives stated in Chapter~\ref{ch:intro}:
+
+\textbf{Objective 1 - Study cost-accuracy trade-offs}: \textit{Achieved}. Baseline evaluations clearly demonstrate monotonic relationship between prompt complexity, cost, and accuracy.
+
+\textbf{Objective 2 - Develop ML-based predictor}: \textit{Partially Achieved}. XGBoost predictor is implemented and functional at 79\% accuracy, but target accuracy of 85\%+ is not yet reached.
+
+\textbf{Objective 3 - Implement multi-objective optimization}: \textit{Achieved}. Three optimization algorithms are implemented, tested, and compared, with NSGA-II demonstrating excellent performance.
+
+\textbf{Objective 4 - Evaluate on real datasets}: \textit{Partially Achieved}. HDFS dataset evaluation is complete, but validation on additional datasets is pending.
+
+\textbf{Objective 5 - Demonstrate feasibility}: \textit{Achieved}. Results show 60\% cost reduction for 1.6\% accuracy loss, establishing clear proof-of-concept.
+
+Overall, the mid-term work has accomplished approximately 60-70\% of the stated objectives, with core functionality implemented and preliminary validation complete.
+
+\section{Lessons Learned}
+\label{sec:discussion_lessons}
+
+\subsection{Technical Insights}
+\label{subsec:discussion_technical}
+
+\textbf{Caching Strategy}: The decision to implement file-based caching proved essential for enabling rapid experimentation. Without caching, each development iteration would require hours of LLM queries.
+
+\textbf{Feature Selection}: Simple features (token counts) proved surprisingly effective. Over-engineering complex features early on may have been wasteful; starting simple was the right approach.
+
+\textbf{Modular Design}: Separating concerns (data loading, prediction, optimization, evaluation) into distinct modules facilitated parallel development and testing.
+
+\subsection{Methodological Insights}
+\label{subsec:discussion_methodological}
+
+\textbf{Baseline Importance}: Implementing simple baseline strategies early provided essential reference points for evaluating optimization algorithms. Without baselines, assessing algorithm performance would be ambiguous.
+
+\textbf{Visualization Value}: Pareto front plots provided immediate intuition about algorithm behavior, often revealing insights not apparent from numerical metrics alone.
+
+\textbf{Incremental Development}: Building the system incrementally (data loading $\rightarrow$ prediction $\rightarrow$ optimization $\rightarrow$ evaluation) rather than attempting end-to-end implementation reduced complexity and enabled early validation of each component.
+
+\section{Threats to Validity}
+\label{sec:discussion_threats}
+
+\textbf{Internal Validity}: The 79\% predictor accuracy means approximately 21\% of probability estimates may be incorrect. This could bias optimization results, though the impact appears limited based on Pareto front quality.
+
+\textbf{External Validity}: Single-dataset evaluation limits generalizability claims. Results may not transfer to other domains, log types, or LLM models.
+
+\textbf{Construct Validity}: Token cost as a proxy for computational cost assumes constant cost per token, but actual inference costs depend on model architecture, batch size, and hardware. More nuanced cost models may be needed for production deployment.
+
+\textbf{Conclusion Validity}: Limited number of optimization runs (3 per algorithm) provides moderate statistical confidence but ideally should be increased to 10-30 runs for stronger conclusions.

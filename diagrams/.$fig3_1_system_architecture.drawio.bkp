@@ -1,0 +1,184 @@
+<mxfile host="app.diagrams.net" modified="2026-01-27T00:00:00.000Z" agent="5.0" version="22.0.0" etag="system_arch" type="device">
+  <diagram name="System Architecture" id="system_arch">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Title -->
+        <mxCell id="title" value="System Architecture: LLM Schedule Optimization Pipeline" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="200" y="30" width="700" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Stage 1: Data Loading -->
+        <mxCell id="stage1" value="&lt;b&gt;Stage 1&lt;/b&gt;&lt;br&gt;Data Loading &amp;amp; Preprocessing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="stage1_content" value="• Load HDFS logs&lt;br&gt;• Extract features&lt;br&gt;• Prepare dataset" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="90" y="160" width="160" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Stage 2: ML Predictor Training -->
+        <mxCell id="stage2" value="&lt;b&gt;Stage 2&lt;/b&gt;&lt;br&gt;ML Predictor Training" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="80" y="260" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="stage2_content" value="• XGBoost training&lt;br&gt;• 79% accuracy&lt;br&gt;• Feature importance" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="90" y="300" width="160" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Stage 3: Prompt Builder -->
+        <mxCell id="stage3" value="&lt;b&gt;Stage 3&lt;/b&gt;&lt;br&gt;Prompt Strategy Builder" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="320" y="120" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="stage3_content" value="• Simple (10 tokens)&lt;br&gt;• Standard (25 tokens)&lt;br&gt;• Few-shot variants" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="330" y="160" width="160" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Stage 4: Optimization -->
+        <mxCell id="stage4" value="&lt;b&gt;Stage 4&lt;/b&gt;&lt;br&gt;Multi-Objective Optimization" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=14;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="320" y="260" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="stage4_content" value="• NSGA-II&lt;br&gt;• SPEA2&lt;br&gt;• Random Search" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="330" y="300" width="160" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Stage 5: LLM Client -->
+        <mxCell id="stage5" value="&lt;b&gt;Stage 5&lt;/b&gt;&lt;br&gt;LLM Client (Cached)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="560" y="120" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="stage5_content" value="• Gemini API&lt;br&gt;• MD5 caching&lt;br&gt;• 584/20k cached" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="570" y="160" width="160" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Stage 6: Evaluation -->
+        <mxCell id="stage6" value="&lt;b&gt;Stage 6&lt;/b&gt;&lt;br&gt;Evaluation &amp;amp; Metrics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;verticalAlign=top;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="560" y="260" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="stage6_content" value="• IGD, Delta, Mn&lt;br&gt;• Pareto fronts&lt;br&gt;• Visualizations" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="570" y="300" width="160" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Cache Database -->
+        <mxCell id="cache" value="&lt;b&gt;Cache Storage&lt;/b&gt;&lt;br&gt;JSON Files (MD5-based)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="820" y="140" width="140" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Results Output -->
+        <mxCell id="results" value="&lt;b&gt;Results&lt;/b&gt;&lt;br&gt;Pareto Solutions&lt;br&gt;Metrics&lt;br&gt;Visualizations" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=13;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="820" y="270" width="140" height="90" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrows: Data flow -->
+        <mxCell id="arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;fontSize=12;" edge="1" parent="1" source="stage1" target="stage2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow1_label" value="Features" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" vertex="1" connectable="0" parent="arrow1">
+          <mxGeometry x="-0.2" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;fontSize=12;" edge="1" parent="1" source="stage1" target="stage3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow2_label" value="Log Data" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" vertex="1" connectable="0" parent="arrow2">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="arrow3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;fontSize=12;" edge="1" parent="1" source="stage2" target="stage4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow3_label" value="Predictions" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" vertex="1" connectable="0" parent="arrow3">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="arrow4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;fontSize=12;" edge="1" parent="1" source="stage3" target="stage4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow4_label" value="Prompts" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" vertex="1" connectable="0" parent="arrow4">
+          <mxGeometry x="-0.2" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="arrow5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;fontSize=12;" edge="1" parent="1" source="stage4" target="stage5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="540" y="310" />
+              <mxPoint x="540" y="170" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="arrow5_label" value="Schedules" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" vertex="1" connectable="0" parent="arrow5">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="arrow6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;fontSize=12;" edge="1" parent="1" source="stage5" target="stage6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow6_label" value="LLM Results" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" vertex="1" connectable="0" parent="arrow6">
+          <mxGeometry x="-0.2" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="arrow7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryDx=0;entryDy=0;strokeWidth=2;fontSize=12;dashed=1;" edge="1" parent="1" source="stage5" target="cache">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow7_label" value="Cache Read/Write" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;" vertex="1" connectable="0" parent="arrow7">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint x="5" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="arrow8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;fontSize=12;" edge="1" parent="1" source="stage6" target="results">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow8_label" value="Output" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" vertex="1" connectable="0" parent="arrow8">
+          <mxGeometry x="-0.1" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Legend -->
+        <mxCell id="legend_box" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="410" width="660" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="legend_title" value="&lt;b&gt;Legend:&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="90" y="420" width="80" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend1" value="" style="endArrow=classic;html=1;strokeWidth=2;fontSize=12;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="100" y="460" as="sourcePoint" />
+            <mxPoint x="150" y="460" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend1_text" value="Data Flow" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="160" y="450" width="100" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend2" value="" style="endArrow=classic;html=1;strokeWidth=2;fontSize=12;dashed=1;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="290" y="460" as="sourcePoint" />
+            <mxPoint x="340" y="460" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend2_text" value="Cache I/O" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="350" y="450" width="100" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend3" value="Pipeline Stage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="480" y="445" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

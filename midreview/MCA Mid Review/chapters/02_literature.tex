@@ -1,0 +1,27 @@
+\chapter{Literature Review}
+\label{ch:lit_rev}
+
+This chapter reviews relevant prior work and theoretical foundations that inform our approach to optimizing LLM utilization through schedule optimization.
+
+\section{Background}
+\label{sec:lit_background}
+
+Large Language Models have demonstrated effectiveness in log analysis and anomaly detection~\citep{gpt3_brown2020}, processing unstructured log messages without extensive feature engineering. The HDFS dataset~\citep{hdfs2009} has become a benchmark for such research. However, LLM inference costs remain a practical concern for production deployment.
+
+\textbf{Prompt Engineering}: Research shows that prompt complexity significantly affects both accuracy and cost. Simple prompts (minimal instructions) are efficient but less accurate, while few-shot prompts (with examples) improve accuracy at higher token costs~\citep{gpt3_brown2020}. This creates a fundamental trade-off between result quality and operational cost, motivating intelligent strategy assignment.
+
+\section{Multi-Objective Optimization}
+\label{sec:lit_moo}
+
+Our problem involves two conflicting objectives: maximizing accuracy while minimizing cost. Multi-objective optimization produces a set of Pareto-optimal solutions representing different trade-offs.
+
+\textbf{NSGA-II}~\citep{deb2002nsga2}: Uses non-dominated sorting and crowding distance to maintain diverse, high-quality Pareto fronts. Successfully applied to software engineering problems~\citep{sbse2001}.
+
+\textbf{SPEA2}~\citep{zitzler2001spea2}: Archive-based approach with density estimation, typically producing fewer but high-quality solutions.
+
+\textbf{XGBoost}~\citep{chen2016xgboost}: Our ML predictor uses XGBoost to estimate prompting strategy success based on task features (token counts, error presence), inspired by the MLBP approach~\citep{ref_paper2024}.
+
+\section{Research Gap}
+\label{sec:lit_gap}
+
+While prior work has explored LLM applications to log analysis and multi-objective optimization independently, limited research exists on optimizing LLM utilization through intelligent prompting strategy assignment. This project implements a complete pipeline using Search-Based Software Engineering principles~\citep{sbse2001}, evaluates on real HDFS logs, and compares multiple optimization algorithms to analyze practical cost-accuracy trade-offs.
